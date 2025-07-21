@@ -1,7 +1,15 @@
 streamlit
+numpy
 pandas
 plotly
 scikit-learn
 fpdf
 gspread
 oauth2client
+base64
+time
+os
+re
+datetime
+io
+openpyxl
