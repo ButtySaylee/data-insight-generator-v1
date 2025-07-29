@@ -5,9 +5,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.cluster import KMeans
 from fpdf import FPDF
-import gspread
+#import gspread
 #from googletrans import Translator
-from oauth2client.service_account import ServiceAccountCredentials
+#from oauth2client.service_account import ServiceAccountCredentials
 import base64
 import time
 import os
@@ -998,20 +998,20 @@ if uploaded_file is not None:
         import smtplib
         from email.message import EmailMessage
 
-        def send_feedback_to_email(feedback_text):
-            msg = EmailMessage()
-            msg.set_content(feedback_text)
-            msg['Subject'] = 'Feedback from Streamlit App'
-            msg['From'] = "nbs917740@gmail.com"  # Replace with your Gmail
-            msg['To'] = "buttysaylee4@gmail.com"
-            try:
-                with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                    smtp.login("nbs917740@gmail.com", "thyo dcae vevx iimn")  # Replace with your Gmail & app password
-                    smtp.send_message(msg)
-                return True
-            except Exception as e:
-                st.error(f"Failed to send feedback: {e}")
-                return False
+        # def send_feedback_to_email(feedback_text):
+        #     msg = EmailMessage()
+        #     msg.set_content(feedback_text)
+        #     msg['Subject'] = 'Feedback from Streamlit App'
+        #     msg['From'] = "nbs917740@gmail.com"  # Replace with your Gmail
+        #     msg['To'] = "buttysaylee4@gmail.com"
+        #     try:
+        #         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        #             smtp.login("nbs917740@gmail.com", "thyo dcae vevx iimn")  # Replace with your Gmail & app password
+        #             smtp.send_message(msg)
+        #         return True
+        #     except Exception as e:
+        #         st.error(f"Failed to send feedback: {e}")
+        #         return False
 
         with st.expander("Feedback"):
             feedback = st.text_area("Flag any issues or suggestions")
