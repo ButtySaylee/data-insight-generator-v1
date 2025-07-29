@@ -153,41 +153,48 @@ if 'onboarded' not in st.session_state:
     st.session_state['onboarded'] = False
 # Guided Onboarding
 if not st.session_state['onboarded']:
-    st.title("Welcome to Data Insights Generator!")
-    st.write("This tool helps you analyze data effortlessly. Follow these steps:")
+    st.title("Welcome to the Data Insights Generator!")
+    st.write("Your journey to understanding students’ experiences begins here.")
+    st.write("This easy-to-use tool is designed to help schools uncover meaningful insights about student belonging and well-being. Let’s get started!")
+    st.write(" How to Use the Tool")
     st.markdown(
-        """
-        <div style="font-size:1.15rem;">
-            <div style="margin-bottom: 10px;">
-                <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-1:</span>
-                <span style="font-weight:600;">
-                    Upload your data by Clicking on the
-                    <span style="color:#d7263d; font-weight:bold; background:#fff3cd; padding:2px 6px; border-radius:4px;">Browse File</span>
-                    button.
-                </span>
-            </div>
-            <div style="margin-bottom: 10px;">
-                <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-2:</span>
-                <span style="font-weight:600;">
-                    Click on the
-                    <span style="color:#003366; font-weight:bold; background:#e6b0aa; padding:2px 6px; border-radius:4px;">Insight Dashboard</span>
-                    button to begin exploring your data by viewing key metrics and others.
-                </span>
-            </div>
-            <div style="margin-bottom: 10px;">
-                <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-3:</span>
-                <span style="font-weight:600;">
-                    Click on
-                    <span style="color:#003366; font-weight:bold; background:#a3d8d3; padding:2px 6px; border-radius:4px;">Explore Belonging Across Groups</span>
-                    section to compare how different student groups experience belonging.
-                </span>
+    """
+    <div style="font-size:1.15rem;">
+        <div style="margin-bottom: 10px;">
+            <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-1:</span>
+            <span style="font-weight:600;">Upload Your Data</span>
+            <br>
+            <span>
+                Click on the
+                <span style="color:#d7263d; font-weight:bold; background:#fff3cd; padding:2px 6px; border-radius:4px;">Browse File</span>
+                button to upload your survey or student data.
+            </span>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-2:</span>
+            <span style="font-weight:600;"> 
+                Explore the Insight Dashboard</span>
+                <br>
+                <span>Click on the </span><span style="color:#003366; font-weight:bold; background:#e6b0aa; padding:2px 6px; border-radius:4px;">Insight Dashboard</span>
+                <span>to instantly view key trends, metrics, and patterns in your data.
+            </span>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-3:</span>
+            <span style="font-weight:600;">
+                Discover Group-Level Insights</span>
+                <br>
+                <span>Head to the</span> <span style="color:#003366; font-weight:bold; background:#a3d8d3; padding:2px 6px; border-radius:4px;">Explore Belonging Across Groups</span>
+                section to see how different student groups (based on gender, grade, religion, etc) experience belonging in your school.
+            </span>
             </div>
             <div style="margin-bottom: 10px;">
                 <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-4:</span>
                 <span style="font-weight:600;">
-                    Click on the
-                    <span style="color:#003366; font-weight:bold; background:#fdf8b7; padding:2px 6px; border-radius:4px;">Generate PDF</span>
-                    button to download the insights report.
+                    Download a Custom Report</span>
+                <br>
+                    <span>Click the <span style="color:#003366; font-weight:bold; background:#fdf8b7; padding:2px 6px; border-radius:4px;">Generate Report</span>
+                    button to download a personalized insights report you can share with your team.
                 </span>
             </div>
         </div>
@@ -198,11 +205,12 @@ if not st.session_state['onboarded']:
     # Show sample data info directly under Step-4
     st.markdown("### Sample Data Preview")
     st.write("""
-    This tool expects data with:
+    To get the most out of this tool, your data should include:
     - **Demographic Columns**: e.g., StudentID, Gender, Grade, Religion, Ethnicity
-    - **Household Items**: e.g., What items do you have at home? (Car, Laptop, Apna Ghar, etc.)
-    - **Questionnaire Columns**: Responses like 'Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'
+    - **Socio-Economic Status Indicators**: e.g., What items do you have at home? (Car, Laptop, Apna Ghar, etc.)
+    - **Survey Responses**: e.g., 'Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'
     """)
+    st.write("This tool is designed with care to support schools in building more inclusive, welcoming, and responsive learning environments. We’re excited you’re here!")
     
     show_sample_onboard = st.toggle("Show Sample Data", value=False, key="toggle_sample_onboard")
     if show_sample_onboard:
@@ -600,427 +608,427 @@ if uploaded_file is not None:
                     st.dataframe(summary)
 
         # Explore and Customize
-    with st.expander("Click here to explore Belonging Across Groups!"):
-        st.subheader("Compare How Different Student Groups Experience Belonging")
-        show_explore = st.toggle("Show Charts", value=True, key="toggle_explore")
-        if show_explore and not df_cleaned.empty:
-            def categorize_income(possessions: str) -> str:
-                if pd.isna(possessions):
-                    return "Unknown"
-                items = possessions.lower()
-                has_car = "car" in items
-                has_computer = "computer" in items or "laptop" in items
-                has_home = "apna ghar" in items
-                is_rented = "rent" in items
-                if has_car and has_home:
-                    return "High"
-                if has_computer or (has_home and not has_car):
-                    return "Mid"
-                return "Low"
+        with st.expander("Click here to explore Belonging Across Groups!"):
+            st.subheader("Compare How Different Student Groups Experience Belonging")
+            show_explore = st.toggle("Show Charts", value=True, key="toggle_explore")
+            if show_explore and not df_cleaned.empty:
+                def categorize_income(possessions: str) -> str:
+                    if pd.isna(possessions):
+                        return "Unknown"
+                    items = possessions.lower()
+                    has_car = "car" in items
+                    has_computer = "computer" in items or "laptop" in items
+                    has_home = "apna ghar" in items
+                    is_rented = "rent" in items
+                    if has_car and has_home:
+                        return "High"
+                    if has_computer or (has_home and not has_car):
+                        return "Mid"
+                    return "Low"
 
-            possessions_col = next((col for col in df_cleaned.columns if "what items among these do you have at home".lower() in col.lower()), None)
-            if possessions_col:
-                df_cleaned["Income Category"] = df_cleaned[possessions_col].apply(categorize_income)
+                possessions_col = next((col for col in df_cleaned.columns if "what items among these do you have at home".lower() in col.lower()), None)
+                if possessions_col:
+                    df_cleaned["Income Category"] = df_cleaned[possessions_col].apply(categorize_income)
 
-            st.subheader(" Demographic Overview")
-            demographic_cols = {
-                "Gender": ["gender", "What gender do you use"],
-                "Grade": ["grade", "Which grade are you in"],
-                "Religion": ["religion"],
-                "Ethnicity": ["ethnicity_cleaned"]
-            }
+                st.subheader(" Demographic Overview")
+                demographic_cols = {
+                    "Gender": ["gender", "What gender do you use"],
+                    "Grade": ["grade", "Which grade are you in"],
+                    "Religion": ["religion"],
+                    "Ethnicity": ["ethnicity_cleaned"]
+                }
 
-            demographic_data = {}
-            for label, keywords in demographic_cols.items():
-                matched_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
-                if matched_col:
-                    demographic_data[label] = matched_col
+                demographic_data = {}
+                for label, keywords in demographic_cols.items():
+                    matched_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
+                    if matched_col:
+                        demographic_data[label] = matched_col
 
-            if demographic_data:
-                items = list(demographic_data.items())
+                if demographic_data:
+                    items = list(demographic_data.items())
 
-                for row_i in range(0, len(items), 2):
-                    row = st.columns(2)
+                    for row_i in range(0, len(items), 2):
+                        row = st.columns(2)
 
-                    for col_i in range(2):
-                        idx = row_i + col_i
-                        if idx >= len(items):
-                            break
+                        for col_i in range(2):
+                            idx = row_i + col_i
+                            if idx >= len(items):
+                                break
 
-                        label, col_name = items[idx]
-                        col = row[col_i]
+                            label, col_name = items[idx]
+                            col = row[col_i]
 
-                        value_counts = df_cleaned[col_name].value_counts(dropna=False).rename_axis(label).reset_index(name='Count')
-                        fig = px.pie(
-                            value_counts,
-                            names=label,
-                            values='Count',
-                            title=f"{label} Distribution",
-                            hole=0.3
-                        )
-
-                        num_categories = len(value_counts)
-                        if num_categories > 3 or any(len(str(cat)) > 8 for cat in value_counts[label]):
-                            fig.update_traces(
-                                textposition='outside',
-                                textinfo='percent',
-                                textfont=dict(size=15),
-                                marker=dict(line=dict(color='#000000', width=1))
-                            )
-                        else:
-                            fig.update_traces(
-                                textposition='auto',
-                                textinfo='percent',
-                                textfont=dict(size=15)
+                            value_counts = df_cleaned[col_name].value_counts(dropna=False).rename_axis(label).reset_index(name='Count')
+                            fig = px.pie(
+                                value_counts,
+                                names=label,
+                                values='Count',
+                                title=f"{label} Distribution",
+                                hole=0.3
                             )
 
-                        fig.update_layout(
-                            uniformtext_minsize=7,
-                            margin=dict(t=45, b=45, l=45, r=45),
-                            height=400,
-                            width=400,
-                            showlegend=True
-                        )
-
-                        config = {
-                            'displayModeBar': True,
-                            'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
-                            'toImageButtonOptions': {
-                                'format': 'png',
-                                'filename': f'{label}_distribution',
-                                'height': 500,
-                                'width': 700
-                            }
-                        }
-
-                        col.plotly_chart(fig, use_container_width=True, config=config)
-
-
-            st.write("### Food for Thought")
-            st.write(
-                """
-                Take a moment to observe the differences in the following charts.  
-                - Do certain groups consistently score higher or lower? Why do you think that happens? 
-                - What kind of experiences or challenges could be influencing their responses?  
-                - Are there social, cultural, or school-related factors that might be shaping these patterns?
-
-                """
-            ) 
-            st.write("")
-
-
-
-            selected_area = st.selectbox("Which belonging aspect do you want to explore?", list(belonging_questions.keys()))
-            if selected_area and not df_cleaned.empty:
-                area_keywords = belonging_questions[selected_area]
-                matched_cols = [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in area_keywords)]
-                if not matched_cols:
-                    st.warning("No matching questions found for this aspect.")
-                else:
-                    target_col= matched_cols[0]
-                    st.markdown(f"**Showing results for:** {', '.join(matched_cols)}")
-                    
-                    
-
-
-                    col1, col2 = st.columns(2)
-                    col_slots = [col1, col2]
-                    chart_index = 0
-
-                    group_columns = {
-                        "Gender": ["gender", "What gender do you use"],
-                        "Grade": ["grade", "Which grade are you in"],
-                        "Income Status": ["Income Category"],
-                        "Health Condition": ["disability", "health condition"],
-                        "Ethnicity": ["ethnicity_cleaned"],
-                        "Religion": ["religion"]
-                    }
-                    
-                    # Gave a white box that looked unclean in most charts 
-                    # st.markdown(   
-                    #     """
-                    #     <style>
-                    #     .modebar {
-                    #         display: block !important;
-                    #         background-color: white !important;
-                    #         border: 1px solid #ddd !important;
-                    #         border-radius: 4px !important;
-                    #         padding: 2px !important;
-                    #     }
-                    #     .modebar-group {
-                    #         display: flex !important;
-                    #         align-items: center !important;
-                    #     }
-                    #     .modebar-btn {
-                    #         background-color: transparent !important;
-                    #         border: none !important;
-                    #         padding: 2px 6px !important;
-                    #         color: #333333 !important;
-                    #     }
-                    #     .modebar-btn:hover {
-                    #         background-color: #f0f0f0 !important;
-                    #     }
-                    #     </style>
-                    #     """,
-                    #     unsafe_allow_html=True
-                    # )
-
-                    st.markdown(
-                        """
-                        <style>
-                        .modebar {
-                            background-color: transparent !important;
-                            border: none !important;
-                            box-shadow: none !important;
-                        }
-                        .modebar-btn > svg { 
-                            stroke: white !important;
-                            fill: white !important;
-                            opacity: 1 !important 
-                        }
-                        .modebar-btn:hover {
-                            background-color: rgba(255, 255, 255, 0.2) !important;
-                        }
-                        </style>
-                        """,
-                        unsafe_allow_html=True
-                    )
-
-
-                    for label, keywords in group_columns.items():
-                        matched_group_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
-                        if matched_group_col:
-                            if "ethnicity" in matched_group_col.lower() and "ethnicity_cleaned" in df_cleaned.columns:
-                                plot_df = df_cleaned[["ethnicity_cleaned", target_col]].dropna()
-                                plot_df.rename(columns={"ethnicity_cleaned": matched_group_col}, inplace=True)
-                            else:
-                                plot_df = df_cleaned[[matched_group_col, target_col]].dropna()
-                            if target_col in plot_df.columns:
-                                plot_df[target_col] = pd.to_numeric(plot_df[target_col], errors="coerce")
-                            else:
-                                st.warning(f"Column '{target_col}' not found in the data.")
-                            group_avg = plot_df.groupby(matched_group_col)[target_col].agg(['mean', 'count']).reset_index()
-                            group_avg.columns = [matched_group_col, 'AvgScore', 'Count']
-                            with col_slots[chart_index % 2]:
-                                fig = px.bar(
-                                    group_avg,
-                                    x=matched_group_col,
-                                    y="AvgScore",
-                                    text="Count",
-                                    title=f"{selected_area} by {label}",
-                                    labels={matched_group_col: label, "AvgScore": "Avg Score"},
-                                    height=400,
-                                    color=matched_group_col,
-                                    color_discrete_sequence=px.colors.qualitative.Set3
-                                )
+                            num_categories = len(value_counts)
+                            if num_categories > 3 or any(len(str(cat)) > 8 for cat in value_counts[label]):
                                 fig.update_traces(
-                                    texttemplate='N=%{text}',
-                                    textposition='inside',
-                                    insidetextanchor='middle',
-                                    hovertemplate="%{x}<br>Avg Score: %{y:.2f}<br>Students: %{text}<extra></extra>"
+                                    textposition='outside',
+                                    textinfo='percent',
+                                    textfont=dict(size=15),
+                                    marker=dict(line=dict(color='#000000', width=1))
                                 )
-                                for i, row in group_avg.iterrows():
-                                    fig.add_annotation(
-                                        x=row[matched_group_col],
-                                        y=row["AvgScore"],
-                                        text=f"Avg={row['AvgScore']:.2f}",
-                                        showarrow=False,
-                                        yshift=10,
-                                        font=dict(color='white'),
-                                        bgcolor='rgba(0,0,0,0.5)'
+                            else:
+                                fig.update_traces(
+                                    textposition='auto',
+                                    textinfo='percent',
+                                    textfont=dict(size=15)
+                                )
+
+                            fig.update_layout(
+                                uniformtext_minsize=7,
+                                margin=dict(t=45, b=45, l=45, r=45),
+                                height=400,
+                                width=400,
+                                showlegend=True
+                            )
+
+                            config = {
+                                'displayModeBar': True,
+                                'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
+                                'toImageButtonOptions': {
+                                    'format': 'png',
+                                    'filename': f'{label}_distribution',
+                                    'height': 500,
+                                    'width': 700
+                                }
+                            }
+
+                            col.plotly_chart(fig, use_container_width=True, config=config)
+
+
+                st.write("### Food for Thought")
+                st.write(
+                    """
+                    Take a moment to observe the differences in the following charts.  
+                    - Do certain groups consistently score higher or lower? Why do you think that happens? 
+                    - What kind of experiences or challenges could be influencing their responses?  
+                    - Are there social, cultural, or school-related factors that might be shaping these patterns?
+
+                    """
+                ) 
+                st.write("")
+
+
+
+                selected_area = st.selectbox("Which belonging aspect do you want to explore?", list(belonging_questions.keys()))
+                if selected_area and not df_cleaned.empty:
+                    area_keywords = belonging_questions[selected_area]
+                    matched_cols = [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in area_keywords)]
+                    if not matched_cols:
+                        st.warning("No matching questions found for this aspect.")
+                    else:
+                        target_col= matched_cols[0]
+                        st.markdown(f"**Showing results for:** {', '.join(matched_cols)}")
+                        
+                        
+
+
+                        col1, col2 = st.columns(2)
+                        col_slots = [col1, col2]
+                        chart_index = 0
+
+                        group_columns = {
+                            "Gender": ["gender", "What gender do you use"],
+                            "Grade": ["grade", "Which grade are you in"],
+                            "Income Status": ["Income Category"],
+                            "Health Condition": ["disability", "health condition"],
+                            "Ethnicity": ["ethnicity_cleaned"],
+                            "Religion": ["religion"]
+                        }
+                        
+                        # Gave a white box that looked unclean in most charts 
+                        # st.markdown(   
+                        #     """
+                        #     <style>
+                        #     .modebar {
+                        #         display: block !important;
+                        #         background-color: white !important;
+                        #         border: 1px solid #ddd !important;
+                        #         border-radius: 4px !important;
+                        #         padding: 2px !important;
+                        #     }
+                        #     .modebar-group {
+                        #         display: flex !important;
+                        #         align-items: center !important;
+                        #     }
+                        #     .modebar-btn {
+                        #         background-color: transparent !important;
+                        #         border: none !important;
+                        #         padding: 2px 6px !important;
+                        #         color: #333333 !important;
+                        #     }
+                        #     .modebar-btn:hover {
+                        #         background-color: #f0f0f0 !important;
+                        #     }
+                        #     </style>
+                        #     """,
+                        #     unsafe_allow_html=True
+                        # )
+
+                        st.markdown(
+                            """
+                            <style>
+                            .modebar {
+                                background-color: transparent !important;
+                                border: none !important;
+                                box-shadow: none !important;
+                            }
+                            .modebar-btn > svg { 
+                                stroke: white !important;
+                                fill: white !important;
+                                opacity: 1 !important 
+                            }
+                            .modebar-btn:hover {
+                                background-color: rgba(255, 255, 255, 0.2) !important;
+                            }
+                            </style>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+
+                        for label, keywords in group_columns.items():
+                            matched_group_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
+                            if matched_group_col:
+                                if "ethnicity" in matched_group_col.lower() and "ethnicity_cleaned" in df_cleaned.columns:
+                                    plot_df = df_cleaned[["ethnicity_cleaned", target_col]].dropna()
+                                    plot_df.rename(columns={"ethnicity_cleaned": matched_group_col}, inplace=True)
+                                else:
+                                    plot_df = df_cleaned[[matched_group_col, target_col]].dropna()
+                                if target_col in plot_df.columns:
+                                    plot_df[target_col] = pd.to_numeric(plot_df[target_col], errors="coerce")
+                                else:
+                                    st.warning(f"Column '{target_col}' not found in the data.")
+                                group_avg = plot_df.groupby(matched_group_col)[target_col].agg(['mean', 'count']).reset_index()
+                                group_avg.columns = [matched_group_col, 'AvgScore', 'Count']
+                                with col_slots[chart_index % 2]:
+                                    fig = px.bar(
+                                        group_avg,
+                                        x=matched_group_col,
+                                        y="AvgScore",
+                                        text="Count",
+                                        title=f"{selected_area} by {label}",
+                                        labels={matched_group_col: label, "AvgScore": "Avg Score"},
+                                        height=400,
+                                        color=matched_group_col,
+                                        color_discrete_sequence=px.colors.qualitative.Set3
                                     )
-                                max_y = group_avg["AvgScore"].max()
-                                fig.update_layout(
-                                    margin=dict(t=50),
-                                    yaxis=dict(range=[0, max_y + 0.5])
-                                )
-                                config = {
-                                    'displayModeBar': True,
-                                    'modeBarButtonsToRemove': [
+                                    fig.update_traces(
+                                        texttemplate='N=%{text}',
+                                        textposition='inside',
+                                        insidetextanchor='middle',
+                                        hovertemplate="%{x}<br>Avg Score: %{y:.2f}<br>Students: %{text}<extra></extra>"
+                                    )
+                                    for i, row in group_avg.iterrows():
+                                        fig.add_annotation(
+                                            x=row[matched_group_col],
+                                            y=row["AvgScore"],
+                                            text=f"Avg={row['AvgScore']:.2f}",
+                                            showarrow=False,
+                                            yshift=10,
+                                            font=dict(color='white'),
+                                            bgcolor='rgba(0,0,0,0.5)'
+                                        )
+                                    max_y = group_avg["AvgScore"].max()
+                                    fig.update_layout(
+                                        margin=dict(t=50),
+                                        yaxis=dict(range=[0, max_y + 0.5])
+                                    )
+                                    config = {
+                                        'displayModeBar': True,
+                                        'modeBarButtonsToRemove': [
+                                        'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
+                                        'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
+                                        'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
+                                        'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
+                                        ],
+                                        'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
+                                        #'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
+                                        'toImageButtonOptions': {
+                                            'format': 'png',
+                                            'filename': 'Bar_chart_screenshot',
+                                            'height': 500,
+                                            'width': 700
+                                        },
+                                        'displaylogo': False
+                                    }
+                                    st.plotly_chart(fig, use_container_width=True, config=config)
+                                chart_index += 1
+                            else:
+                                st.info(f"No data found for {label}.")
+
+                 # 🎯 Breakdown by Group (Percentage)
+                st.markdown("### Breakdown by Group (Percentage)")
+                show_breakdown = st.toggle("Show Chart", value=True, key="toggle_breakdown")
+                if show_breakdown:
+                    breakdown_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in group_columns["Gender"])), None)
+                    if breakdown_col and target_col:
+                        breakdown_df = df_cleaned[[breakdown_col, target_col]].dropna()
+                        breakdown_df[target_col] = pd.to_numeric(breakdown_df[target_col], errors="coerce")
+                        if not breakdown_df.empty:
+                            def label_bucket(val):
+                                if pd.isna(val):
+                                    return "Unknown"
+                                if val <= 2:
+                                    return "Disagree"
+                                elif val == 3:
+                                    return "Neutral"
+                                elif val >= 4:
+                                    return "Agree"
+                                return "Unknown"
+                            breakdown_df["ResponseLevel"] = breakdown_df[target_col].apply(label_bucket)
+                            percent_df = breakdown_df.groupby([breakdown_col, "ResponseLevel"]).size().reset_index(name='Count')
+                            total_counts = percent_df.groupby(breakdown_col)['Count'].transform('sum')
+                            percent_df['Percent'] = (percent_df['Count'] / total_counts * 100).round(1)
+                            response_order = ["Agree", "Neutral", "Disagree", "Unknown"]
+                            percent_df["ResponseLevel"] = pd.Categorical(percent_df["ResponseLevel"], categories=response_order, ordered=True)
+                            fig = px.bar(
+                                percent_df,
+                                x=breakdown_col,
+                                y="Percent",
+                                color="ResponseLevel",
+                                text=percent_df["Percent"].astype(str) + '%',
+                                barmode="stack",
+                                title=f"Percentage Breakdown of Responses to '{selected_area}' by Gender",
+                                color_discrete_map={
+                                    "Agree": "#4CAF50",
+                                    "Neutral": "#FFC107",
+                                    "Disagree": "#F44336",
+                                    "Unknown": "#9E9E9E"
+                                },
+                                height=450
+                            )
+                            fig.update_layout(
+                                yaxis_title="Percentage (%)",
+                                xaxis_title=breakdown_col,
+                                bargap=0.5,
+                                legend_title="Response Level",
+                                uniformtext_minsize=8,
+                                uniformtext_mode='hide'
+                            )
+                            fig.update_traces(
+                                textposition="inside",
+                                insidetextanchor="middle",
+                                cliponaxis=False
+                            )
+                            config = {
+                                'displayModeBar': True,
+                                'modeBarButtonsToRemove': [
                                     'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
                                     'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
                                     'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
                                     'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
-                                    ],
-                                    'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
-                                    #'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
-                                    'toImageButtonOptions': {
-                                        'format': 'png',
-                                        'filename': 'Bar_chart_screenshot',
-                                        'height': 500,
-                                        'width': 700
-                                    },
-                                    'displaylogo': False
-                                }
-                                st.plotly_chart(fig, use_container_width=True, config=config)
-                            chart_index += 1
-                        else:
-                            st.info(f"No data found for {label}.")
-
-                # 🎯 Breakdown by Group (Percentage)
-            st.markdown("### Breakdown by Group (Percentage)")
-            show_breakdown = st.toggle("Show Chart", value=True, key="toggle_breakdown")
-            if show_breakdown:
-                breakdown_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in group_columns["Gender"])), None)
-                if breakdown_col and target_col:
-                    breakdown_df = df_cleaned[[breakdown_col, target_col]].dropna()
-                    breakdown_df[target_col] = pd.to_numeric(breakdown_df[target_col], errors="coerce")
-                    if not breakdown_df.empty:
-                        def label_bucket(val):
-                            if pd.isna(val):
-                                return "Unknown"
-                            if val <= 2:
-                                return "Disagree"
-                            elif val == 3:
-                                return "Neutral"
-                            elif val >= 4:
-                                return "Agree"
-                            return "Unknown"
-                        breakdown_df["ResponseLevel"] = breakdown_df[target_col].apply(label_bucket)
-                        percent_df = breakdown_df.groupby([breakdown_col, "ResponseLevel"]).size().reset_index(name='Count')
-                        total_counts = percent_df.groupby(breakdown_col)['Count'].transform('sum')
-                        percent_df['Percent'] = (percent_df['Count'] / total_counts * 100).round(1)
-                        response_order = ["Agree", "Neutral", "Disagree", "Unknown"]
-                        percent_df["ResponseLevel"] = pd.Categorical(percent_df["ResponseLevel"], categories=response_order, ordered=True)
-                        fig = px.bar(
-                            percent_df,
-                            x=breakdown_col,
-                            y="Percent",
-                            color="ResponseLevel",
-                            text=percent_df["Percent"].astype(str) + '%',
-                            barmode="stack",
-                            title=f"Percentage Breakdown of Responses to '{selected_area}' by Gender",
-                            color_discrete_map={
-                                "Agree": "#4CAF50",
-                                "Neutral": "#FFC107",
-                                "Disagree": "#F44336",
-                                "Unknown": "#9E9E9E"
-                            },
-                            height=450
-                        )
-                        fig.update_layout(
-                            yaxis_title="Percentage (%)",
-                            xaxis_title=breakdown_col,
-                            bargap=0.5,
-                            legend_title="Response Level",
-                            uniformtext_minsize=8,
-                            uniformtext_mode='hide'
-                        )
-                        fig.update_traces(
-                            textposition="inside",
-                            insidetextanchor="middle",
-                            cliponaxis=False
-                        )
-                        config = {
-                            'displayModeBar': True,
-                            'modeBarButtonsToRemove': [
-                                'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
-                                'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
-                                'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
-                                'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
-                            ],
-                            'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
-                            'toImageButtonOptions': {
-                                'format': 'png',
-                                'filename': 'bar_chart_screenshot',
-                                'height': 500,
-                                'width': 700,
-                                'scale': 2
-                            },
-                                        'displaylogo': False
-                        }
+                                ],
+                                'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
+                                'toImageButtonOptions': {
+                                    'format': 'png',
+                                    'filename': 'bar_chart_screenshot',
+                                    'height': 500,
+                                    'width': 700,
+                                    'scale': 2
+                                },
+                                            'displaylogo': False
+                            }
 
 
-                        st.plotly_chart(fig, use_container_width=True, config=config)
+                            st.plotly_chart(fig, use_container_width=True, config=config)
 
-        # Take Action
-        school_name = st.text_input("Enter your School Name", value="ABC High School", key="school_input")
-        generate_pdf = st.button("Generate PDF")
+            # Take Action
+            school_name = st.text_input("Enter your School Name", value="ABC High School", key="school_input")
+            generate_pdf = st.button("Generate PDF")
 
-        logo_path = "images/project_apnapan_logo.png"
-        logo_exists = os.path.exists(logo_path)
+            logo_path = "images/project_apnapan_logo.png"
+            logo_exists = os.path.exists(logo_path)
 
-        class ProStyledPDF(FPDF):
-            def header(self):
-                if logo_exists:
-                    self.image(logo_path, x=10, y=10, w=20)
-                self.set_font("Arial", "B", 18)
-                self.set_text_color(0, 51, 102)  # Navy Blue
-                self.cell(0, 10, school_name, ln=True, align="C")
-                self.set_font("Arial", "", 13)
-                self.cell(0, 10, "Data Insights Snapshot", ln=True, align="C")
-                self.ln(8)
+            class ProStyledPDF(FPDF):
+                def header(self):
+                    if logo_exists:
+                        self.image(logo_path, x=10, y=10, w=20)
+                    self.set_font("Arial", "B", 18)
+                    self.set_text_color(0, 51, 102)  # Navy Blue
+                    self.cell(0, 10, school_name, ln=True, align="C")
+                    self.set_font("Arial", "", 13)
+                    self.cell(0, 10, "Data Insights Snapshot", ln=True, align="C")
+                    self.ln(8)
 
-            def footer(self):
-                self.set_y(-20)
-                self.set_font("Arial", "I", 10)
-                self.set_text_color(100)
-                self.cell(0, 10, "Generated using the Project Apnapan Data Insights Tool", 0, 1, "C")
-                self.cell(0, 10, datetime.today().strftime("%B %d, %Y"), 0, 0, "C")
+                def footer(self):
+                    self.set_y(-20)
+                    self.set_font("Arial", "I", 10)
+                    self.set_text_color(100)
+                    self.cell(0, 10, "Generated using the Project Apnapan Data Insights Tool", 0, 1, "C")
+                    self.cell(0, 10, datetime.today().strftime("%B %d, %Y"), 0, 0, "C")
 
-            def metric_card(self, label, value, color_rgb):
-                self.set_fill_color(*color_rgb)
-                self.set_text_color(255, 255, 255)
-                self.set_font("Arial", "B", 12)
-                self.cell(0, 12, f"{label}: {value:.2f}", ln=1, align="C", fill=True)
-                self.ln(2)
+                def metric_card(self, label, value, color_rgb):
+                    self.set_fill_color(*color_rgb)
+                    self.set_text_color(255, 255, 255)
+                    self.set_font("Arial", "B", 12)
+                    self.cell(0, 12, f"{label}: {value:.2f}", ln=1, align="C", fill=True)
+                    self.ln(2)
 
-            def intro_section(self):
-                self.set_font("Arial", "", 12)
-                self.set_text_color(0)
-                self.multi_cell(0, 8, f"This report presents a snapshot of how students experience Belonging, "
-                                    f"Safety, Respect, and Welcome at {school_name}. The results are based on "
-                                    f"student-reported data collected from the survey file.")
-                self.ln(8)
+                def intro_section(self):
+                    self.set_font("Arial", "", 12)
+                    self.set_text_color(0)
+                    self.multi_cell(0, 8, f"This report presents a snapshot of how students experience Belonging, "
+                                        f"Safety, Respect, and Welcome at {school_name}. The results are based on "
+                                        f"student-reported data collected from the survey file.")
+                    self.ln(8)
 
-        if generate_pdf and school_name.strip():
-            if overall_belonging_score is None or not category_averages:
-                st.error("Cannot generate PDF: No valid data available. Please upload a file and process it.")
-            else:
-                pdf = ProStyledPDF()
-                pdf.add_page()
-                pdf.intro_section()
-                pdf.metric_card("Overall Belonging Score", overall_belonging_score or 0, (0, 102, 204))  # Blue
-                pdf.metric_card("Safety", category_averages.get("Safety", 0), (0, 153, 0))               # Green
-                pdf.metric_card("Respect", category_averages.get("Respect", 0), (255, 153, 51))          # Orange
-                pdf.metric_card("Welcomed", category_averages.get("Welcome", 0), (204, 0, 102))          # Pink
-                clean_name = re.sub(r'[^\w\s-]', '', school_name).strip().replace(' ', '_')
-                safe_filename = f"{clean_name}_insights_report.pdf"
-                pdf_output = pdf.output(dest='S').encode('latin-1')
-                st.download_button(
-                    label="Download Insights PDF",
-                    data=pdf_output,
-                    file_name=safe_filename,
-                    mime="application/pdf"
-                )
+            if generate_pdf and school_name.strip():
+                if overall_belonging_score is None or not category_averages:
+                    st.error("Cannot generate PDF: No valid data available. Please upload a file and process it.")
+                else:
+                    pdf = ProStyledPDF()
+                    pdf.add_page()
+                    pdf.intro_section()
+                    pdf.metric_card("Overall Belonging Score", overall_belonging_score or 0, (0, 102, 204))  # Blue
+                    pdf.metric_card("Safety", category_averages.get("Safety", 0), (0, 153, 0))               # Green
+                    pdf.metric_card("Respect", category_averages.get("Respect", 0), (255, 153, 51))          # Orange
+                    pdf.metric_card("Welcomed", category_averages.get("Welcome", 0), (204, 0, 102))          # Pink
+                    clean_name = re.sub(r'[^\w\s-]', '', school_name).strip().replace(' ', '_')
+                    safe_filename = f"{clean_name}_insights_report.pdf"
+                    pdf_output = pdf.output(dest='S').encode('latin-1')
+                    st.download_button(
+                        label="Download Insights PDF",
+                        data=pdf_output,
+                        file_name=safe_filename,
+                        mime="application/pdf"
+                    )
 
-    # Feedback Loop
-    import smtplib
-    from email.message import EmailMessage
+        # Feedback Loop
+        import smtplib
+        from email.message import EmailMessage
 
-    # def send_feedback_to_email(feedback_text):
-    #     msg = EmailMessage()
-    #     msg.set_content(feedback_text)
-    #     msg['Subject'] = 'Feedback from Streamlit App'
-    #     msg['From'] = "nbs917740@gmail.com"  # Replace with your Gmail
-    #     msg['To'] = "buttysaylee4@gmail.com"
-    #     try:
-    #         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-    #             smtp.login("nbs917740@gmail.com", "thyo dcae vevx iimn")  # Replace with your Gmail & app password
-    #             smtp.send_message(msg)
-    #         return True
-    #     except Exception as e:
-    #         st.error(f"Failed to send feedback: {e}")
-    #         return False
+        # def send_feedback_to_email(feedback_text):
+        #     msg = EmailMessage()
+        #     msg.set_content(feedback_text)
+        #     msg['Subject'] = 'Feedback from Streamlit App'
+        #     msg['From'] = "nbs917740@gmail.com"  # Replace with your Gmail
+        #     msg['To'] = "buttysaylee4@gmail.com"
+        #     try:
+        #         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        #             smtp.login("nbs917740@gmail.com", "thyo dcae vevx iimn")  # Replace with your Gmail & app password
+        #             smtp.send_message(msg)
+        #         return True
+        #     except Exception as e:
+        #         st.error(f"Failed to send feedback: {e}")
+        #         return False
 
-    with st.expander("Feedback"):
-        feedback = st.text_area("Flag any issues or suggestions")
-        if st.button("Submit Feedback"):
-            if feedback:
-                if send_feedback_to_email(feedback):
-                    st.success("Thank you! Your feedback has been sent.")
-            else:
-                st.warning("Please enter some feedback before submitting.")
+        with st.expander("Feedback"):
+            feedback = st.text_area("Flag any issues or suggestions")
+            if st.button("Submit Feedback"):
+                if feedback:
+                    if send_feedback_to_email(feedback):
+                        st.success("Thank you! Your feedback has been sent.")
+                else:
+                    st.warning("Please enter some feedback before submitting.")
 
 with st.expander("Need Help?"):
     st.write("Contact us at: Phone: +91 1234567890")
