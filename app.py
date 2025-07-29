@@ -5,15 +5,30 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.cluster import KMeans
 from fpdf import FPDF
-#import gspread
+import gspread
 #from googletrans import Translator
-#from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 import base64
 import time
 import os
 import re
 from datetime import datetime
 from io import StringIO
+
+# Function to connect to Google Sheets
+def connect_to_google_sheet(sheet_name):
+    # Define the scope
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+
+    # Load credentials from the JSON file
+    creds = ServiceAccountCredentials.from_json_keyfile_name("data-insight-tool-467421-4ef9618d2e45.json", scope)
+
+    # Authorize the client
+    client = gspread.authorize(creds)
+
+    # Open the Google Sheet
+    sheet = client.open(sheet_name).sheet1  # Access the first sheet
+    return sheet
 
 # Initialize session state for navigation
 if 'current_page' not in st.session_state:
@@ -1018,32 +1033,27 @@ if uploaded_file is not None:
                     )
 
         # Feedback Loop
-        import smtplib
-        from email.message import EmailMessage
+        def send_feedback_to_google_sheet(feedback_text):
+            try:
+                sheet = connect_to_google_sheet("Apnapan Data Insights Generator Tool Feedbacks")  # Replace with your sheet name
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                sheet.append_row([timestamp, feedback_text])  # Add a new row with the timestamp and feedback
+                return True
+            except Exception as e:
+                st.error(f"Failed to send feedback: {e}")
+                return False
 
-        # def send_feedback_to_email(feedback_text):
-        #     msg = EmailMessage()
-        #     msg.set_content(feedback_text)
-        #     msg['Subject'] = 'Feedback from Streamlit App'
-        #     msg['From'] = "nbs917740@gmail.com"  # Replace with your Gmail
-        #     msg['To'] = "buttysaylee4@gmail.com"
-        #     try:
-        #         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        #             smtp.login("nbs917740@gmail.com", "thyo dcae vevx iimn")  # Replace with your Gmail & app password
-        #             smtp.send_message(msg)
-        #         return True
-        #     except Exception as e:
-        #         st.error(f"Failed to send feedback: {e}")
-        #         return False
-
+        # Feedback Section
         with st.expander("Feedback"):
             feedback = st.text_area("Flag any issues or suggestions")
             if st.button("Submit Feedback"):
                 if feedback:
-                    if send_feedback_to_email(feedback):
-                        st.success("Thank you! Your feedback has been sent.")
+                    if send_feedback_to_google_sheet(feedback):
+                        st.success("Thank you! Your feedback has been recorded.")
+                    else:
+                        st.error("Failed to submit feedback. Please try again later.")
                 else:
                     st.warning("Please enter some feedback before submitting.")
 
-with st.expander("Need Help?"):
-    st.write("Contact us at: Phone: +91 1234567890")
+        with st.expander("Need Help?"):
+            st.write("Contact us at: Phone: +91 1234567890")
