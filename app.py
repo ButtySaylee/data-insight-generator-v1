@@ -15,6 +15,14 @@ import re
 from datetime import datetime
 from io import StringIO
 
+# Initialize session state for navigation
+if 'current_page' not in st.session_state:
+    st.session_state['current_page'] = 'landing'
+
+# Function to navigate to a specific page
+def navigate_to(page):
+    st.session_state['current_page'] = page
+
 scale_base64 = ""
 scale_path = "images/Likert_Scale.png"  # Make sure this matches your file name and location
 if os.path.exists(scale_path):
@@ -148,15 +156,14 @@ sample_data = pd.DataFrame({
     "Do_teachers_notice_you": ["Disagree", "Neutral", "Agree", "Disagree", "Neutral", "Strongly Disagree", "Agree", "Disagree", "Neutral", "Disagree"],
     "Do_you_have_a_close_teacher": ["Agree", "Neutral", "Strongly Agree", "Disagree", "Agree", "Neutral", "Strongly Agree", "Disagree", "Agree", "Neutral"]
 })
-# ...now your onboarding block...
-if 'onboarded' not in st.session_state:
-    st.session_state['onboarded'] = False
-# Guided Onboarding
-if not st.session_state['onboarded']:
+
+
+# Landing Page
+if st.session_state['current_page'] == 'landing':
     st.title("Welcome to the Data Insights Generator!")
     st.write("Your journey to understanding students’ experiences begins here.")
     st.write("This easy-to-use tool is designed to help schools uncover meaningful insights about student belonging and well-being. Let’s get started!")
-    st.write(" How to Use the Tool")
+    
     st.markdown(
     """
     <div style="font-size:1.15rem;">
@@ -201,7 +208,7 @@ if not st.session_state['onboarded']:
         """,
         unsafe_allow_html=True
     )
-
+        
     # Show sample data info directly under Step-4
     st.markdown("### Sample Data Preview")
     st.write("""
@@ -223,11 +230,10 @@ if not st.session_state['onboarded']:
         mime="text/csv"
     )
 
-    if st.button("Start Exploring"):
-        st.session_state['onboarded'] = True
+ # Button to navigate to the main page
+    if st.button("Start Exploring", key="start_exploring_button"):
+        navigate_to('main') 
     st.stop()
-
-st.title("Data Insights Generator")
 
 # Questionnaire mapping
 questionnaire_mapping = {
@@ -237,7 +243,16 @@ questionnaire_mapping = {
     "Agree": 4,
     "Strongly Agree": 5
 }
+# Add a "Back" button to navigate to the landing page
+if st.button("Back to Landing Page", key="back_button"):
+    navigate_to('landing')
+    
+# Main Page
+if st.session_state['current_page'] == 'main':
+    st.title("Data Insights Generator")
+    st.write("Explore your data and generate insights.")
 
+    # Existing main page content goes here
 # Upload Data with Drag-and-Drop
 uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx", "xls", "txt"])
 
@@ -943,7 +958,7 @@ if uploaded_file is not None:
 
             # Take Action
             school_name = st.text_input("Enter your School Name", value="ABC High School", key="school_input")
-            generate_pdf = st.button("Generate PDF")
+            generate_pdf = st.button("Generate Report", key="generate_report_button")
 
             logo_path = "images/project_apnapan_logo.png"
             logo_exists = os.path.exists(logo_path)
@@ -996,7 +1011,7 @@ if uploaded_file is not None:
                     safe_filename = f"{clean_name}_insights_report.pdf"
                     pdf_output = pdf.output(dest='S').encode('latin-1')
                     st.download_button(
-                        label="Download Insights PDF",
+                        label="Downloading Report",
                         data=pdf_output,
                         file_name=safe_filename,
                         mime="application/pdf"
