@@ -1,6 +1,10 @@
-streamlit==1.24.0
+streamlit==1.39.0
 numpy==1.26.4
 pandas==2.2.2
-plotly==5.22.0
+plotly==5.24.1
 scikit-learn==1.5.2
-fpdf2==2.7.9
+fpdf==1.7.2
+pillow==10.4.0  # Updated to a newer, compatible version
+# Optional (if uncommented):
+# gspread==6.1.2
+# googletrans==4.0.0-rc1
