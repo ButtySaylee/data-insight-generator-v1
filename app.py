@@ -15,6 +15,17 @@ import re
 from datetime import datetime
 from io import StringIO
 
+scale_base64 = ""
+scale_path = "Likert_Scale.png"  # Make sure this matches your file name and location
+if os.path.exists(scale_path):
+    try:
+        with open(scale_path, "rb") as img_file:
+            scale_base64 = base64.b64encode(img_file.read()).decode()
+    except Exception as e:
+        print(f"Error loading Likert scale image: {e}")
+else:
+    print(f"Scale file not found: {scale_path}")
+
 # Set page config for mobile-friendly design
 st.set_page_config(layout="wide", page_title="Data Insights Generator")
 
@@ -120,56 +131,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# Guided Onboarding
-if 'onboarded' not in st.session_state:
-    st.session_state['onboarded'] = False
-if not st.session_state['onboarded']:
-    st.title("Welcome to Data Insights Generator!")
-    st.write("This tool helps you analyze data effortlessly. Follow these steps:")
-    st.write("- Upload your data")
-    st.write("- Review cleaning suggestions")
-    st.write("- Explore insights")
-    if st.button("Start Exploring"):
-        st.session_state['onboarded'] = True
-    st.stop()
-
-st.title("Data Insights Generator")
-
-# ...existing code...
-
-# Google Sheets Upload Option
-st.sidebar.markdown("### Upload Google Sheet")
-google_sheet_url = st.sidebar.text_input("Enter Google Sheet URL or ID")
-
-if google_sheet_url:
-    try:
-        # Authenticate with Google Sheets API
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        credentials = ServiceAccountCredentials.from_json_keyfile_name("path_to_your_service_account.json", scope)
-        client = gspread.authorize(credentials)
-
-        # Extract the sheet ID from the URL
-        sheet_id = google_sheet_url.split("/d/")[1].split("/")[0] if "/d/" in google_sheet_url else google_sheet_url
-
-        # Open the Google Sheet
-        sheet = client.open_by_key(sheet_id)
-        worksheet = sheet.get_worksheet(0)  # Get the first worksheet
-        data = worksheet.get_all_records()
-
-        # Convert to DataFrame
-        df = pd.DataFrame(data)
-
-        st.write("### Google Sheet Data Preview")
-        st.dataframe(df.head())
-
-        # Save the DataFrame to session state for further processing
-        st.session_state['df_cleaned'] = df.copy()
-
-    except Exception as e:
-        st.error(f"Failed to load Google Sheet: {e}")
-
-# ...existing code...
-# Sample dataset for preview
+# Sample dataset for preview (move this up!)
 sample_data = pd.DataFrame({
     "StudentID": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     "Gender": ["Male", "Female", "Male", "Female", "Male", "Female", "Male", "Female", "Male", "Female"],
@@ -186,28 +148,78 @@ sample_data = pd.DataFrame({
     "Do_teachers_notice_you": ["Disagree", "Neutral", "Agree", "Disagree", "Neutral", "Strongly Disagree", "Agree", "Disagree", "Neutral", "Disagree"],
     "Do_you_have_a_close_teacher": ["Agree", "Neutral", "Strongly Agree", "Disagree", "Agree", "Neutral", "Strongly Agree", "Disagree", "Agree", "Neutral"]
 })
+# ...now your onboarding block...
+if 'onboarded' not in st.session_state:
+    st.session_state['onboarded'] = False
+# Guided Onboarding
+if not st.session_state['onboarded']:
+    st.title("Welcome to Data Insights Generator!")
+    st.write("This tool helps you analyze data effortlessly. Follow these steps:")
+    st.markdown(
+        """
+        <div style="font-size:1.15rem;">
+            <div style="margin-bottom: 10px;">
+                <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-1:</span>
+                <span style="font-weight:600;">
+                    Upload your data by Clicking on the
+                    <span style="color:#d7263d; font-weight:bold; background:#fff3cd; padding:2px 6px; border-radius:4px;">Browse File</span>
+                    button.
+                </span>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-2:</span>
+                <span style="font-weight:600;">
+                    Click on the
+                    <span style="color:#003366; font-weight:bold; background:#e6b0aa; padding:2px 6px; border-radius:4px;">Insight Dashboard</span>
+                    button to begin exploring your data by viewing key metrics and others.
+                </span>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-3:</span>
+                <span style="font-weight:600;">
+                    Click on
+                    <span style="color:#003366; font-weight:bold; background:#a3d8d3; padding:2px 6px; border-radius:4px;">Explore Belonging Across Groups</span>
+                    section to compare how different student groups experience belonging.
+                </span>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="font-size:1.25rem; font-weight:700; color:#003366;">Step-4:</span>
+                <span style="font-weight:600;">
+                    Click on the
+                    <span style="color:#003366; font-weight:bold; background:#fdf8b7; padding:2px 6px; border-radius:4px;">Generate PDF</span>
+                    button to download the insights report.
+                </span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-# Sidebar with sample data preview and download
-st.sidebar.markdown("### Sample Data Preview")
-st.sidebar.write("""
-This tool expects data with:
-- **Demographic Columns**: e.g., StudentID, Gender, Grade, Religion, Ethnicity
-- **Household Items**: e.g., What items do you have at home? (Car, Laptop, Apna Ghar, etc.)
-- **Questionnaire Columns**: Responses like 'Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'
-""")
+    # Show sample data info directly under Step-4
+    st.markdown("### Sample Data Preview")
+    st.write("""
+    This tool expects data with:
+    - **Demographic Columns**: e.g., StudentID, Gender, Grade, Religion, Ethnicity
+    - **Household Items**: e.g., What items do you have at home? (Car, Laptop, Apna Ghar, etc.)
+    - **Questionnaire Columns**: Responses like 'Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'
+    """)
+    
+    show_sample_onboard = st.toggle("Show Sample Data", value=False, key="toggle_sample_onboard")
+    if show_sample_onboard:
+        st.markdown("### Expected Data Structure")
+        st.dataframe(sample_data.head())
+    st.download_button(
+        label="📥 Download Sample Data",
+        data=sample_data.to_csv(index=False),
+        file_name="sample_data.csv",
+        mime="text/csv"
+    )
 
-show_sample = st.sidebar.toggle("Show Sample Data", value=False, key="toggle_sample_sidebar")
-if show_sample:
-    st.sidebar.markdown("### Expected Data Structure")
-    st.sidebar.dataframe(sample_data.head())
-st.sidebar.download_button(
-    label="📥 Download Sample Data",
-    data=sample_data.to_csv(index=False),
-    file_name="sample_data.csv",
-    mime="text/csv"
-)
+    if st.button("Start Exploring"):
+        st.session_state['onboarded'] = True
+    st.stop()
 
-
+st.title("Data Insights Generator")
 
 # Questionnaire mapping
 questionnaire_mapping = {
@@ -243,7 +255,7 @@ if uploaded_file is not None:
             st.write(f"Removed timestamp columns: {', '.join(timestamp_cols)}")
 
         # Display file details
-        st.write(f"File uploaded: {uploaded_file.name}")
+        #st.write(f"File uploaded: {uploaded_file.name}")
         st.write(f"File size: {uploaded_file.size} bytes")
         num_columns = df.shape[1]  # shape returns (rows, columns), we want the second element (columns)
         st.write(f"Number of columns: {num_columns}")
@@ -266,83 +278,81 @@ if uploaded_file is not None:
         st.error(f"Error processing file: {str(e)}. Please upload a valid CSV, TXT, XLS, or XLSX file.")
         st.stop()
     
-    
     # Detect questionnaire columns dynamically
     questionnaire_cols = [col for col in df.columns if any(str(val).strip().title() in questionnaire_mapping for val in df[col].dropna())]
 
-    with st.expander("Clean Data"):
-        st.write("### Suggested Actions:")
-        fill_method = st.selectbox("Handle missing values", ["None", "Mean", "Median", "Drop"])
-        convert_questionnaire = st.checkbox("Convert Questionnaire Responses to Numeric", value=True)
+    #st.write("### Suggested Actions:")
+    fill_method = True # st.selectbox("Handle missing values", ["None", "Mean", "Median", "Drop"])
+    convert_questionnaire = True #st.checkbox("Convert Questionnaire Responses to Numeric", value=True)
+    
+    #if st.button("Apply Suggested Cleaning"):
+    df_cleaned = df.copy()
+
+    # #attempt to translate the column names, unable to get hands on a hinglish set 
+
+    # # Initialize the Translator
+    # translator = Translator()
+
+    # # Create a function to translate column names
+    # def translate_columns(columns):
+    #     translated_column = []
+    #     for text in columns:
+    #       try:
+    #         # Translate each column name from Hinglish/ to English
+    #         translated = translator.translate(col, src='hi', dest='en').text
+    #         translated_column.append(translated.text)
+    #       except Exception as e:
+    #         print(f"Error translating text '{text}': {e}")
+    #         translated_column.append(text) 
+    #     return translated_column
+
+    # # Apply translation to all columns or specific columns
+    # for col in df.columns:
+    #   df_cleaned[col] = translate_columns(df[col])
+
+    # print("\nTranslated DataFrame:")
+    # print(df_cleaned)
         
-        if st.button("Apply Suggested Cleaning"):
-            df_cleaned = df.copy()
+    if convert_questionnaire and questionnaire_cols:
+        for col in questionnaire_cols:
+            df_cleaned[col] = df_cleaned[col].astype(str).str.strip().str.title()
+            df_cleaned[col] = df_cleaned[col].map(questionnaire_mapping).fillna(df_cleaned[col])
+            df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors='coerce')
+    else:
+        st.info("No questionnaire columns found to convert.")
 
-            # #attempt to translate the column names, unable to get hands on a hinglish set 
+    ethnicity_column = next((col for col in df_cleaned.columns if "ethnicity" in col.lower()), None)
+    if ethnicity_column:
+        df_cleaned["ethnicity_cleaned"] = df_cleaned[ethnicity_column].replace({
+            v: "General" if "general" in str(v).lower() else
+            "SC" if "sc" in str(v).lower() else
+            "OBC" if "other" in str(v).lower() else
+            "Don't Know" if "do" in str(v).lower() else
+            "ST" if "st" in str(v).lower() else v
+            for v in df_cleaned[ethnicity_column]
+        })
 
-            # # Initialize the Translator
-            # translator = Translator()
-
-            # # Create a function to translate column names
-            # def translate_columns(columns):
-            #     translated_column = []
-            #     for text in columns:
-            #       try:
-            #         # Translate each column name from Hinglish/ to English
-            #         translated = translator.translate(col, src='hi', dest='en').text
-            #         translated_column.append(translated.text)
-            #       except Exception as e:
-            #         print(f"Error translating text '{text}': {e}")
-            #         translated_column.append(text) 
-            #     return translated_column
-
-            # # Apply translation to all columns or specific columns
-            # for col in df.columns:
-            #   df_cleaned[col] = translate_columns(df[col])
-
-            # print("\nTranslated DataFrame:")
-            # print(df_cleaned)
-                
-            if convert_questionnaire and questionnaire_cols:
-                for col in questionnaire_cols:
-                    df_cleaned[col] = df_cleaned[col].astype(str).str.strip().str.title()
-                    df_cleaned[col] = df_cleaned[col].map(questionnaire_mapping).fillna(df_cleaned[col])
-                    df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors='coerce')
-            else:
-                st.info("No questionnaire columns found to convert.")
-
-            ethnicity_column = next((col for col in df_cleaned.columns if "ethnicity" in col.lower()), None)
-            if ethnicity_column:
-                df_cleaned["ethnicity_cleaned"] = df_cleaned[ethnicity_column].replace({
-                    v: "General" if "general" in str(v).lower() else
-                    "SC" if "sc" in str(v).lower() else
-                    "OBC" if "other" in str(v).lower() else
-                    "Don't Know" if "do" in str(v).lower() else
-                    "ST" if "st" in str(v).lower() else v
-                    for v in df_cleaned[ethnicity_column]
-                })
-
-            if fill_method != "None":
-                if st.button(f"Approve {fill_method} for missing values?"):
-                    if fill_method == "Mean" or fill_method == "Median":
-                        numeric_cols = df_cleaned.select_dtypes(include=['float64', 'int64']).columns
-                        if numeric_cols.empty:
-                            st.warning("No numeric columns available for mean/median imputation.")
-                        else:
-                            if fill_method == "Mean":
-                                df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].mean())
-                            elif fill_method == "Median":
-                                df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].median())
-                    elif fill_method == "Drop":
-                        df_cleaned = df_cleaned.dropna()
-            st.session_state['df_cleaned'] = df_cleaned
-            st.write("### Data Preview (After Cleaning)")
-            col1, col2 = st.columns([8, 2])
-            with col1:
-                show_cleaned = st.toggle("Show Cleaned Data", value=True, key="toggle_cleaned")
-            if show_cleaned:
-                st.dataframe(df_cleaned.head())    
-            st.write(f"Number of question columns used for Insights: {len(questionnaire_cols)}")
+    # if fill_method != "None":
+    #     if st.button(f"Approve {fill_method} for missing values?"):
+    #         if fill_method == "Mean" or fill_method == "Median":
+    #             numeric_cols = df_cleaned.select_dtypes(include=['float64', 'int64']).columns
+    #             if numeric_cols.empty:
+    #                 st.warning("No numeric columns available for mean/median imputation.")
+    #             else:
+    #                 if fill_method == "Mean":
+    #                     df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].mean())
+    #                 elif fill_method == "Median":
+    #                     df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].median())
+    #         elif fill_method == "Drop":
+    #             df_cleaned = df_cleaned.dropna()
+    st.session_state['df_cleaned'] = df_cleaned
+    # st.write("### Data Preview (After Cleaning)")
+    # col1, col2 = st.columns([8, 2])
+    # with col1:
+    #     show_cleaned = st.toggle("Show Cleaned Data", value=True, key="toggle_cleaned")
+    # if show_cleaned:
+    #     st.dataframe(df_cleaned.head())    
+    #st.write(f"Number of question columns used for Insights: {len(questionnaire_cols)}")
 
     # Insight Delivery
     df_cleaned = st.session_state.get('df_cleaned', df)
@@ -401,550 +411,616 @@ if uploaded_file is not None:
         "Religion": ["religion"]
     }
 
-with st.expander("Insight Dashboard"):
-    st.write("### Key Metrics (Scale of 5)")
-    show_dashboard = st.toggle("Show Dashboard", value=True, key="toggle_dashboard")
-    if show_dashboard:
-        # Ensure df_cleaned is available
-        df_cleaned = st.session_state.get('df_cleaned', pd.DataFrame())
-        
-        # Initialize variables with default values
-        overall_belonging_score = None
-        category_averages = {}
-        highest_area = None
-        lowest_area = None
-        
-        belonging_questions = {
-        "Safety": ["safe", "surakshit"],
-        "Respect": ["respected","respect", "izzat", "as much respect"],        
-        "Welcome": ["being welcomed", "welcome", "swagat"],
-        "Relationships with Teachers": ["one teacher", "share your problem", "care about your feelings", "close to your teachers", "close teacher"],
-        "Participation": ["opportunities", "participate", "school activities", "take part"],        
-        "Acknowledgement": ["notice", "noticed", "listen to you", "dekhein", "acknowledge", "recognized", "valued", "heard", "seen", "like you"]
-         }
-        
-
-        # Recalculate matched_questions and related metrics if data is available
-        if df_cleaned.empty:
-            st.warning("No cleaned data available. Please upload and process a file first.")
-        else:
-            matched_questions = {
-                cat: [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)]
-                for cat, keywords in belonging_questions.items()
-            }
-            # Add toggle for matched questions table
-            show_matched_questions = st.toggle("Show Matched Questions", value=False, key="toggle_matched_questions")
-            if show_matched_questions:
-                st.write("### Matched Questions")
-                # Convert matched_questions to DataFrame with newlines instead of commas
-                matched_questions_df = pd.DataFrame.from_dict(matched_questions, orient="index").T.fillna("")
-                matched_questions_df = matched_questions_df.apply(lambda x: "\n".join(x) if x.dtype == "object" and any(isinstance(val, list) for val in x) else x)
-                st.dataframe(matched_questions_df)
-
-            belonging_cols = [col for sublist in matched_questions.values() for col in sublist]
+    with st.expander("Click here for Insight Dashboard!"):
+        st.header("Insight Dashboard")
+        st.write("### Key Metrics (Scale of 5)")
+        show_dashboard = st.toggle("Show Metrics Board", value=True, key="toggle_dashboard")
+        if show_dashboard:
+            # Ensure df_cleaned is available
+            df_cleaned = st.session_state.get('df_cleaned', pd.DataFrame())
             
-            if belonging_cols:
-                df_cleaned["BelongingRaw"] = df_cleaned[belonging_cols].apply(pd.to_numeric, errors="coerce").sum(axis=1)
-                df_cleaned["BelongingCount"] = df_cleaned[belonging_cols].apply(pd.to_numeric, errors="coerce").notna().sum(axis=1)
-                df_cleaned["BelongingScore"] = df_cleaned.apply(
-                    lambda row: (row["BelongingRaw"] / row["BelongingCount"]) if row["BelongingCount"] > 0 else 0,
-                    axis=1
-                )
-                overall_belonging_score = df_cleaned["BelongingScore"].mean()
-                
-                category_averages = {
-                    cat: df_cleaned[cols].apply(pd.to_numeric, errors='coerce').mean().mean() if cols else 0
-                    for cat, cols in matched_questions.items()
-                }
-                highest_area = max(category_averages, key=category_averages.get)
-                # Filter out scores <= 0.00 for lowest score
-                valid_categories = {k: v for k, v in category_averages.items() if v > 0.00}
-                lowest_area = min(valid_categories, key=valid_categories.get) if valid_categories else None
-            else:
-                st.info("No survey columns matched the keyword categories to calculate scores.")
-
-        # Two-column layout
-        left_col, right_col = st.columns([1, 1])
-
-        # Left column: Overall Belonging Score, Highest Score, and Lowest Score
-        with left_col:
-            if overall_belonging_score is not None and category_averages:
-                st.markdown(f"""
-                    <div style="background-color:#e6b0aa; border: 4px solid #ff9999; border-radius:10px; padding:1rem; text-align:center;
-                                box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center;">
-                        <h4> &#9734; Overall Belonging Score</h4>
-                        <h4 style="margin:0;">{overall_belonging_score:.2f}</h4>
-                    </div>
-                """, unsafe_allow_html=True)
-                st.markdown(f"""
-                    <div style="background-color:#99ccff; border: 4px solid #A7C7E7; border-radius:10px; padding:0.5rem; text-align:center;
-                                box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
-                        <h4 style="font-size: 1.5rem; margin: 0;"> Highest Score: {highest_area} </h4>
-                        <h2 style="font-size: 1.5rem; margin: 0;">{category_averages[highest_area]:.2f}</h2>
-                    </div>
-                """, unsafe_allow_html=True)
-                # Show Lowest Score only if valid (score > 0.00)
-                if lowest_area is not None:
-                    st.markdown(f"""
-                        <div style="background-color:#FAC898; border: 4px solid #ffcc00; border-radius:10px; padding:0.5rem; text-align:center; margin-bottom: 1rem;
-                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
-                            <h4 style="font-size: 1.5rem; margin: 0;">Lowest Score: {lowest_area}</h4>
-                            <h2 style="font-size: 1.5rem; margin: 0;">{category_averages[lowest_area]:.2f}</h2>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                        <div style="background-color:#FAC898; border: 4px solid #ffcc00; border-radius:10px; padding:0.5rem; text-align:center;
-                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
-                            <h4 style="font-size: 1.5rem; margin: 0;">Lowest Score</h4>
-                            <h2 style="font-size: 1.5rem; margin: 0;">N/A</h2>
-                        </div>
-                    """, unsafe_allow_html=True)
-
-        # Right column: Safety, Respect, and Welcome
-        with right_col:
-            if category_averages:
-                if "Safety" in category_averages:
-                    st.markdown(f"""
-                        <div style="background-color:#DFC5FE; border-radius:10px; padding:1rem; text-align:center;
-                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center;">
-                            <h4 style="font-size: 1rem; margin: 0;">Safety</h4>
-                            <h2 style="font-size: 1.5rem; margin: 0;"">{category_averages['Safety']:.2f}</h2>
-                        </div>
-                    """, unsafe_allow_html=True)
-                if "Respect" in category_averages:
-                    st.markdown(f"""
-                        <div style="background-color:#fdf8b7; border-radius:10px; padding:0.5rem; text-align:center;
-                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
-                            <h4 style="font-size: 1rem; margin: 0;">Respect</h4>
-                            <h2 style="font-size: 1.5rem; margin: 0;">{category_averages['Respect']:.2f}</h2>
-                        </div>
-                    """, unsafe_allow_html=True)
-                if "Welcome" in category_averages:
-                    st.markdown(f"""
-                        <div style="background-color:#a3d8d3; border-radius:10px; padding:0.5rem; text-align:center;
-                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
-                            <h4 style="font-size: 1rem; margin: 0;">Welcome</h4>
-                            <h2 style="font-size: 1.5rem; margin: 0;">{category_averages['Welcome']:.2f}</h2>
-                        </div>
-                    """, unsafe_allow_html=True)
-
-        if category_averages:
-            st.subheader("Category-wise Averages")
-            col1, col2 = st.columns([8, 2])
-            with col1:
-                show_averages = st.toggle("Show Table", value=True, key="toggle_averages")
-            if show_averages:
-                st.dataframe(pd.DataFrame.from_dict(category_averages, orient="index", columns=["Average Score"]).round(2))
-
-        if not df_cleaned.empty:
-            summary = df_cleaned.describe()
-            col1, col2 = st.columns([8, 2])
-            with col1:
-                show_summary = st.toggle("Show Summary Table", value=True, key="toggle_summary")
-            if show_summary:
-                st.dataframe(summary)
-
-    # Explore and Customize
-    with st.expander("Explore Belonging Across Groups"):
-        st.subheader("Compare How Different Student Groups Experience Belonging")
-        show_explore = st.toggle("Show Charts", value=True, key="toggle_explore")
-        if show_explore and not df_cleaned.empty:
-            def categorize_income(possessions: str) -> str:
-                if pd.isna(possessions):
-                    return "Unknown"
-                items = possessions.lower()
-                has_car = "car" in items
-                has_computer = "computer" in items or "laptop" in items
-                has_home = "apna ghar" in items
-                is_rented = "rent" in items
-                if has_car and has_home:
-                    return "High"
-                if has_computer or (has_home and not has_car):
-                    return "Mid"
-                return "Low"
-
-            possessions_col = next((col for col in df_cleaned.columns if "what items among these do you have at home".lower() in col.lower()), None)
-            if possessions_col:
-                df_cleaned["Income Category"] = df_cleaned[possessions_col].apply(categorize_income)
-
-            st.subheader("📊 Demographic Overview")
-            demographic_cols = {
-                "Gender": ["gender", "What gender do you use"],
-                "Grade": ["grade", "Which grade are you in"],
-                "Religion": ["religion"],
-                "Ethnicity": ["ethnicity_cleaned"]
+            # Initialize variables with default values
+            overall_belonging_score = None
+            category_averages = {}
+            highest_area = None
+            lowest_area = None
+            
+            belonging_questions = {
+            "Safety": ["safe", "surakshit"],
+            "Respect": ["respected","respect", "izzat", "as much respect"],        
+            "Welcome": ["being welcomed", "welcome", "swagat"],
+            "Relationships with Teachers": ["one teacher", "share your problem", "care about your feelings", "close to your teachers", "close teacher"],
+            "Participation": ["opportunities", "participate", "school activities", "take part"],        
+            "Acknowledgement": ["notice", "noticed", "listen to you", "dekhein", "acknowledge", "recognized", "valued", "heard", "seen", "like you"]
             }
+            
 
-            demographic_data = {}
-            for label, keywords in demographic_cols.items():
-                matched_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
-                if matched_col:
-                    demographic_data[label] = matched_col
+            # Recalculate matched_questions and related metrics if data is available
+            if df_cleaned.empty:
+                st.warning("No cleaned data available. Please upload and process a file first.")
+            else:
+                matched_questions = {
+                    cat: [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)]
+                    for cat, keywords in belonging_questions.items()
+                }
+                # Add toggle for matched questions table
+                show_matched_questions = st.toggle("Show Questions matched to Constructs", value=False, key="toggle_matched_questions")
+                if show_matched_questions:
+                    st.write("### Matched Questions")
+                    # Convert matched_questions to DataFrame with newlines instead of commas
+                    matched_questions_df = pd.DataFrame.from_dict(matched_questions, orient="index").T.fillna("")
+                    matched_questions_df = matched_questions_df.apply(lambda x: "\n".join(x) if x.dtype == "object" and any(isinstance(val, list) for val in x) else x)
+                    st.dataframe(matched_questions_df)
 
-            if demographic_data:
-                demo_cols = st.columns(len(demographic_data))
-                for i, (label, col_name) in enumerate(demographic_data.items()):
-                    col = demo_cols[i]
-                    value_counts = df_cleaned[col_name].value_counts(dropna=False).rename_axis(label).reset_index(name='Count')
-                    fig = px.pie(
-                        value_counts,
-                        names=label,
-                        values='Count',
-                        title=f"{label} Distribution",
-                        hole=0.3
+                belonging_cols = [col for sublist in matched_questions.values() for col in sublist]
+                
+                if belonging_cols:
+                    df_cleaned["BelongingRaw"] = df_cleaned[belonging_cols].apply(pd.to_numeric, errors="coerce").sum(axis=1)
+                    df_cleaned["BelongingCount"] = df_cleaned[belonging_cols].apply(pd.to_numeric, errors="coerce").notna().sum(axis=1)
+                    df_cleaned["BelongingScore"] = df_cleaned.apply(
+                        lambda row: (row["BelongingRaw"] / row["BelongingCount"]) if row["BelongingCount"] > 0 else 0,
+                        axis=1
                     )
+                    overall_belonging_score = df_cleaned["BelongingScore"].mean()
                     
-                                       
-                    num_categories = len(value_counts)
-                    if num_categories > 3 or any(len(str(cat)) > 8 for cat in value_counts[label]):
-                        fig.update_traces(
-                            textposition='outside',
-                            textinfo='percent',
-                            textfont=dict(size=11),
-                            marker=dict(line=dict(color='#000000', width=1))
-                        )
-                    else:
-                        fig.update_traces(
-                            textposition='auto',
-                            textinfo='percent',
-                            textfont=dict(size=10)
-                        )
-
-                    fig.update_layout(
-                        uniformtext_minsize=7,  # Minimum text size
-                            margin=dict(t=45, b=45, l=45, r=45),  # Margins to avoid touching the box
-                            height=400,  # Adjust height for smaller chart
-                            width=400,  # Adjust width for smaller chart
-                            showlegend=True
-                    )
-                    config = {
-                        'displayModeBar': True,
-                        'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
-                                               
-                        'toImageButtonOptions': {
-                            'format': 'png',
-                            'filename': 'pie_chart_screenshot',
-                            'height': 500,
-                            'width': 700
-                        }
+                    category_averages = {
+                        cat: df_cleaned[cols].apply(pd.to_numeric, errors='coerce').mean().mean() if cols else 0
+                        for cat, cols in matched_questions.items()
                     }
-                    col.plotly_chart(fig, use_container_width=True, config=config)
-
-            selected_area = st.selectbox("Which belonging aspect do you want to explore?", list(belonging_questions.keys()))
-            if selected_area and not df_cleaned.empty:
-                area_keywords = belonging_questions[selected_area]
-                matched_cols = [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in area_keywords)]
-                if not matched_cols:
-                    st.warning("No matching questions found for this aspect.")
+                    highest_area = max(category_averages, key=category_averages.get)
+                    # Filter out scores <= 0.00 for lowest score
+                    valid_categories = {k: v for k, v in category_averages.items() if v > 0.00}
+                    lowest_area = min(valid_categories, key=valid_categories.get) if valid_categories else None
                 else:
-                    target_col= matched_cols[0]
-                    st.markdown(f"**Showing results for:** {', '.join(matched_cols)}")
+                    st.info("No survey columns matched the keyword categories to calculate scores.")
 
 
-                    col1, col2 = st.columns(2)
-                    col_slots = [col1, col2]
-                    chart_index = 0
+            # Show Likert scale image above the three score cards
+            if scale_base64:
+                st.markdown(
+                f'''
+                <div style="display: flex; justify-content: center; align-items: center;">
+                    <img src="data:image/png;base64,{scale_base64}" alt="Likert Scale" style="width:70%; max-width:600px; min-width:300px; height:150px; margin-bottom:18px;"/>
+                </div>
+                ''',
+                unsafe_allow_html=True
+            )
+            # Three-column horizontal layout
+            col1, col2, col3 = st.columns(3)
 
-                    group_columns = {
-                        "Gender": ["gender", "What gender do you use"],
-                        "Grade": ["grade", "Which grade are you in"],
-                        "Income Status": ["Income Category"],
-                        "Health Condition": ["disability", "health condition"],
-                        "Ethnicity": ["ethnicity_cleaned"],
-                        "Religion": ["religion"]
-                    }
-                    
-                    # Gave a white box that looked unclean in most charts 
-                    # st.markdown(   
-                    #     """
-                    #     <style>
-                    #     .modebar {
-                    #         display: block !important;
-                    #         background-color: white !important;
-                    #         border: 1px solid #ddd !important;
-                    #         border-radius: 4px !important;
-                    #         padding: 2px !important;
-                    #     }
-                    #     .modebar-group {
-                    #         display: flex !important;
-                    #         align-items: center !important;
-                    #     }
-                    #     .modebar-btn {
-                    #         background-color: transparent !important;
-                    #         border: none !important;
-                    #         padding: 2px 6px !important;
-                    #         color: #333333 !important;
-                    #     }
-                    #     .modebar-btn:hover {
-                    #         background-color: #f0f0f0 !important;
-                    #     }
-                    #     </style>
-                    #     """,
-                    #     unsafe_allow_html=True
-                    # )
+            if overall_belonging_score is not None and category_averages:
+                with col1:
+                    st.markdown(f"""
+                        <div style="background-color:#e6b0aa; border: 4px solid #ff9999; border-radius:10px; padding:1rem; text-align:center;
+                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                            <h4> &#9734; Overall Belonging Score</h4>
+                            <h4 style="margin:0;">{overall_belonging_score:.2f}</h4>
+                        </div>
+                    """, unsafe_allow_html=True)
 
-                    st.markdown(
-                        """
-                        <style>
-                        .modebar {
-                            background-color: transparent !important;
-                            border: none !important;
-                            box-shadow: none !important;
-                        }
-                        .modebar-btn > svg { 
-                            stroke: white !important;
-                            fill: white !important;
-                            opacity: 1 !important 
-                        }
-                        .modebar-btn:hover {
-                            background-color: rgba(255, 255, 255, 0.2) !important;
-                        }
-                        </style>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                with col2:
+                    st.markdown(f"""
+                        <div style="background-color:#99ccff; border: 4px solid #A7C7E7; border-radius:10px; padding:0.5rem; text-align:center;
+                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                            <h4 style="font-size: 1.5rem; margin: 0;"> Highest Score: {highest_area} </h4>
+                            <h2 style="font-size: 1.5rem; margin: 0;">{category_averages[highest_area]:.2f}</h2>
+                        </div>
+                    """, unsafe_allow_html=True)
 
+                with col3:
+                    if lowest_area is not None:
+                        st.markdown(f"""
+                            <div style="background-color:#FAC898; border: 4px solid #ffcc00; border-radius:10px; padding:0.5rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                                <h4 style="font-size: 1.5rem; margin: 0;">Lowest Score: {lowest_area}</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;">{category_averages[lowest_area]:.2f}</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                            <div style="background-color:#FAC898; border: 4px solid #ffcc00; border-radius:10px; padding:0.5rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                                <h4 style="font-size: 1.5rem; margin: 0;">Lowest Score</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;">N/A</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+            st.markdown("<hr style='border: 1px dashed black; border-radius: 5px;'>", unsafe_allow_html=True)
+            st.subheader("Category-wise Averages")
+            # Two-column layout
+            left_col, right_col = st.columns([1, 1])
+            
 
-                    for label, keywords in group_columns.items():
-                        matched_group_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
-                        if matched_group_col:
-                            if "ethnicity" in matched_group_col.lower() and "ethnicity_cleaned" in df_cleaned.columns:
-                                plot_df = df_cleaned[["ethnicity_cleaned", target_col]].dropna()
-                                plot_df.rename(columns={"ethnicity_cleaned": matched_group_col}, inplace=True)
-                            else:
-                                plot_df = df_cleaned[[matched_group_col, target_col]].dropna()
-                            if target_col in plot_df.columns:
-                                plot_df[target_col] = pd.to_numeric(plot_df[target_col], errors="coerce")
-                            else:
-                                st.warning(f"Column '{target_col}' not found in the data.")
-                            group_avg = plot_df.groupby(matched_group_col)[target_col].agg(['mean', 'count']).reset_index()
-                            group_avg.columns = [matched_group_col, 'AvgScore', 'Count']
-                            with col_slots[chart_index % 2]:
-                                fig = px.bar(
-                                    group_avg,
-                                    x=matched_group_col,
-                                    y="AvgScore",
-                                    text="Count",
-                                    title=f"{selected_area} by {label}",
-                                    labels={matched_group_col: label, "AvgScore": "Avg Score"},
-                                    height=400,
-                                    color=matched_group_col,
-                                    color_discrete_sequence=px.colors.qualitative.Set3
-                                )
+            # Right column: Safety, Respect, and Welcome
+            with left_col:
+                if category_averages:
+                    if "Safety" in category_averages:
+                        st.markdown(f"""
+                            <div style="background-color:#DFC5FE; border-radius:10px; padding:1rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                                <h4 style="font-size: 1rem; margin: 0;">Safety</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;"">{category_averages['Safety']:.2f}</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    if "Respect" in category_averages:
+                        st.markdown(f"""
+                            <div style="background-color:#fdf8b7; border-radius:10px; padding:0.5rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
+                                <h4 style="font-size: 1rem; margin: 0;">Respect</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;">{category_averages['Respect']:.2f}</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    if "Welcome" in category_averages:
+                        st.markdown(f"""
+                            <div style="background-color:#a3d8d3; border-radius:10px; padding:0.5rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
+                                <h4 style="font-size: 1rem; margin: 0;">Welcome</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;">{category_averages['Welcome']:.2f}</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+            with right_col:
+                if category_averages:
+                    if "Participation" in category_averages:
+                        st.markdown(f"""
+                            <div style="background-color:#DFC5FE; border-radius:10px; padding:1rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                                <h4 style="font-size: 1rem; margin: 0;">Participation</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;"">{category_averages['Participation']:.2f}</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    if "Acknowledgement" in category_averages:
+                        st.markdown(f"""
+                            <div style="background-color:#fdf8b7; border-radius:10px; padding:0.5rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
+                                <h4 style="font-size: 1rem; margin: 0;">Acknowledgement</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;">{category_averages['Acknowledgement']:.2f}</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    if "Relationships with Teachers" in category_averages:
+                        st.markdown(f"""
+                            <div style="background-color:#a3d8d3; border-radius:10px; padding:0.5rem; text-align:center;
+                                        box-shadow: 0 2px 5px rgba(0,0,0,0.1); color:black; width: 100%; height: 120px; display: flex; flex-direction: column; justify-content: center; margin-top: 1rem;">
+                                <h4 style="font-size: 1rem; margin: 0;">Relationships with Teachers</h4>
+                                <h2 style="font-size: 1.5rem; margin: 0;">{category_averages['Relationships with Teachers']:.2f}</h2>
+                            </div>
+                        """, unsafe_allow_html=True)
+
+            # if category_averages:
+            #     col1, col2 = st.columns([8, 2])
+            #     with col1:
+            #         show_averages = st.toggle("Show Table", value=False, key="toggle_averages")
+            #     if show_averages:
+            #         st.dataframe(pd.DataFrame.from_dict(category_averages, orient="index", columns=["Average Score"]).round(2))
+
+            if not df_cleaned.empty:
+                summary = df_cleaned.describe()
+                col1, col2 = st.columns([8, 2])
+                with col1:
+                    show_summary = st.toggle("Show Summary Table", value=False, key="toggle_summary")
+                if show_summary:
+                    st.dataframe(summary)
+
+        # Explore and Customize
+        with st.expander("Click here to explore Belonging Across Groups!"):
+            st.subheader("Compare How Different Student Groups Experience Belonging")
+            show_explore = st.toggle("Show Charts", value=True, key="toggle_explore")
+            if show_explore and not df_cleaned.empty:
+                def categorize_income(possessions: str) -> str:
+                    if pd.isna(possessions):
+                        return "Unknown"
+                    items = possessions.lower()
+                    has_car = "car" in items
+                    has_computer = "computer" in items or "laptop" in items
+                    has_home = "apna ghar" in items
+                    is_rented = "rent" in items
+                    if has_car and has_home:
+                        return "High"
+                    if has_computer or (has_home and not has_car):
+                        return "Mid"
+                    return "Low"
+
+                possessions_col = next((col for col in df_cleaned.columns if "what items among these do you have at home".lower() in col.lower()), None)
+                if possessions_col:
+                    df_cleaned["Income Category"] = df_cleaned[possessions_col].apply(categorize_income)
+
+                st.subheader(" Demographic Overview")
+                demographic_cols = {
+                    "Gender": ["gender", "What gender do you use"],
+                    "Grade": ["grade", "Which grade are you in"],
+                    "Religion": ["religion"],
+                    "Ethnicity": ["ethnicity_cleaned"]
+                }
+
+                demographic_data = {}
+                for label, keywords in demographic_cols.items():
+                    matched_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
+                    if matched_col:
+                        demographic_data[label] = matched_col
+
+                if demographic_data:
+                    items = list(demographic_data.items())
+
+                    for row_i in range(0, len(items), 2):
+                        row = st.columns(2)
+
+                        for col_i in range(2):
+                            idx = row_i + col_i
+                            if idx >= len(items):
+                                break
+
+                            label, col_name = items[idx]
+                            col = row[col_i]
+
+                            value_counts = df_cleaned[col_name].value_counts(dropna=False).rename_axis(label).reset_index(name='Count')
+                            fig = px.pie(
+                                value_counts,
+                                names=label,
+                                values='Count',
+                                title=f"{label} Distribution",
+                                hole=0.3
+                            )
+
+                            num_categories = len(value_counts)
+                            if num_categories > 3 or any(len(str(cat)) > 8 for cat in value_counts[label]):
                                 fig.update_traces(
-                                    texttemplate='N=%{text}',
-                                    textposition='inside',
-                                    insidetextanchor='middle',
-                                    hovertemplate="%{x}<br>Avg Score: %{y:.2f}<br>Students: %{text}<extra></extra>"
+                                    textposition='outside',
+                                    textinfo='percent',
+                                    textfont=dict(size=15),
+                                    marker=dict(line=dict(color='#000000', width=1))
                                 )
-                                for i, row in group_avg.iterrows():
-                                    fig.add_annotation(
-                                        x=row[matched_group_col],
-                                        y=row["AvgScore"],
-                                        text=f"Avg={row['AvgScore']:.2f}",
-                                        showarrow=False,
-                                        yshift=10,
-                                        font=dict(color='white'),
-                                        bgcolor='rgba(0,0,0,0.5)'
+                            else:
+                                fig.update_traces(
+                                    textposition='auto',
+                                    textinfo='percent',
+                                    textfont=dict(size=15)
+                                )
+
+                            fig.update_layout(
+                                uniformtext_minsize=7,
+                                margin=dict(t=45, b=45, l=45, r=45),
+                                height=400,
+                                width=400,
+                                showlegend=True
+                            )
+
+                            config = {
+                                'displayModeBar': True,
+                                'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
+                                'toImageButtonOptions': {
+                                    'format': 'png',
+                                    'filename': f'{label}_distribution',
+                                    'height': 500,
+                                    'width': 700
+                                }
+                            }
+
+                            col.plotly_chart(fig, use_container_width=True, config=config)
+
+
+                st.write("### Food for Thought")
+                st.write(
+                    """
+                    Take a moment to observe the differences in the following charts.  
+                    - Do certain groups consistently score higher or lower? Why do you think that happens? 
+                    - What kind of experiences or challenges could be influencing their responses?  
+                    - Are there social, cultural, or school-related factors that might be shaping these patterns?
+
+                    """
+                ) 
+                st.write("")
+
+
+
+                selected_area = st.selectbox("Which belonging aspect do you want to explore?", list(belonging_questions.keys()))
+                if selected_area and not df_cleaned.empty:
+                    area_keywords = belonging_questions[selected_area]
+                    matched_cols = [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in area_keywords)]
+                    if not matched_cols:
+                        st.warning("No matching questions found for this aspect.")
+                    else:
+                        target_col= matched_cols[0]
+                        st.markdown(f"**Showing results for:** {', '.join(matched_cols)}")
+                        
+                        
+
+
+                        col1, col2 = st.columns(2)
+                        col_slots = [col1, col2]
+                        chart_index = 0
+
+                        group_columns = {
+                            "Gender": ["gender", "What gender do you use"],
+                            "Grade": ["grade", "Which grade are you in"],
+                            "Income Status": ["Income Category"],
+                            "Health Condition": ["disability", "health condition"],
+                            "Ethnicity": ["ethnicity_cleaned"],
+                            "Religion": ["religion"]
+                        }
+                        
+                        # Gave a white box that looked unclean in most charts 
+                        # st.markdown(   
+                        #     """
+                        #     <style>
+                        #     .modebar {
+                        #         display: block !important;
+                        #         background-color: white !important;
+                        #         border: 1px solid #ddd !important;
+                        #         border-radius: 4px !important;
+                        #         padding: 2px !important;
+                        #     }
+                        #     .modebar-group {
+                        #         display: flex !important;
+                        #         align-items: center !important;
+                        #     }
+                        #     .modebar-btn {
+                        #         background-color: transparent !important;
+                        #         border: none !important;
+                        #         padding: 2px 6px !important;
+                        #         color: #333333 !important;
+                        #     }
+                        #     .modebar-btn:hover {
+                        #         background-color: #f0f0f0 !important;
+                        #     }
+                        #     </style>
+                        #     """,
+                        #     unsafe_allow_html=True
+                        # )
+
+                        st.markdown(
+                            """
+                            <style>
+                            .modebar {
+                                background-color: transparent !important;
+                                border: none !important;
+                                box-shadow: none !important;
+                            }
+                            .modebar-btn > svg { 
+                                stroke: white !important;
+                                fill: white !important;
+                                opacity: 1 !important 
+                            }
+                            .modebar-btn:hover {
+                                background-color: rgba(255, 255, 255, 0.2) !important;
+                            }
+                            </style>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+
+                        for label, keywords in group_columns.items():
+                            matched_group_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
+                            if matched_group_col:
+                                if "ethnicity" in matched_group_col.lower() and "ethnicity_cleaned" in df_cleaned.columns:
+                                    plot_df = df_cleaned[["ethnicity_cleaned", target_col]].dropna()
+                                    plot_df.rename(columns={"ethnicity_cleaned": matched_group_col}, inplace=True)
+                                else:
+                                    plot_df = df_cleaned[[matched_group_col, target_col]].dropna()
+                                if target_col in plot_df.columns:
+                                    plot_df[target_col] = pd.to_numeric(plot_df[target_col], errors="coerce")
+                                else:
+                                    st.warning(f"Column '{target_col}' not found in the data.")
+                                group_avg = plot_df.groupby(matched_group_col)[target_col].agg(['mean', 'count']).reset_index()
+                                group_avg.columns = [matched_group_col, 'AvgScore', 'Count']
+                                with col_slots[chart_index % 2]:
+                                    fig = px.bar(
+                                        group_avg,
+                                        x=matched_group_col,
+                                        y="AvgScore",
+                                        text="Count",
+                                        title=f"{selected_area} by {label}",
+                                        labels={matched_group_col: label, "AvgScore": "Avg Score"},
+                                        height=400,
+                                        color=matched_group_col,
+                                        color_discrete_sequence=px.colors.qualitative.Set3
                                     )
-                                max_y = group_avg["AvgScore"].max()
-                                fig.update_layout(
-                                    margin=dict(t=50),
-                                    yaxis=dict(range=[0, max_y + 0.5])
-                                )
-                                config = {
-                                    'displayModeBar': True,
-                                    'modeBarButtonsToRemove': [
+                                    fig.update_traces(
+                                        texttemplate='N=%{text}',
+                                        textposition='inside',
+                                        insidetextanchor='middle',
+                                        hovertemplate="%{x}<br>Avg Score: %{y:.2f}<br>Students: %{text}<extra></extra>"
+                                    )
+                                    for i, row in group_avg.iterrows():
+                                        fig.add_annotation(
+                                            x=row[matched_group_col],
+                                            y=row["AvgScore"],
+                                            text=f"Avg={row['AvgScore']:.2f}",
+                                            showarrow=False,
+                                            yshift=10,
+                                            font=dict(color='white'),
+                                            bgcolor='rgba(0,0,0,0.5)'
+                                        )
+                                    max_y = group_avg["AvgScore"].max()
+                                    fig.update_layout(
+                                        margin=dict(t=50),
+                                        yaxis=dict(range=[0, max_y + 0.5])
+                                    )
+                                    config = {
+                                        'displayModeBar': True,
+                                        'modeBarButtonsToRemove': [
+                                        'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
+                                        'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
+                                        'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
+                                        'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
+                                        ],
+                                        'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
+                                        #'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
+                                        'toImageButtonOptions': {
+                                            'format': 'png',
+                                            'filename': 'Bar_chart_screenshot',
+                                            'height': 500,
+                                            'width': 700
+                                        },
+                                        'displaylogo': False
+                                    }
+                                    st.plotly_chart(fig, use_container_width=True, config=config)
+                                chart_index += 1
+                            else:
+                                st.info(f"No data found for {label}.")
+
+                 # 🎯 Breakdown by Group (Percentage)
+                st.markdown("### Breakdown by Group (Percentage)")
+                show_breakdown = st.toggle("Show Chart", value=True, key="toggle_breakdown")
+                if show_breakdown:
+                    breakdown_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in group_columns["Gender"])), None)
+                    if breakdown_col and target_col:
+                        breakdown_df = df_cleaned[[breakdown_col, target_col]].dropna()
+                        breakdown_df[target_col] = pd.to_numeric(breakdown_df[target_col], errors="coerce")
+                        if not breakdown_df.empty:
+                            def label_bucket(val):
+                                if pd.isna(val):
+                                    return "Unknown"
+                                if val <= 2:
+                                    return "Disagree"
+                                elif val == 3:
+                                    return "Neutral"
+                                elif val >= 4:
+                                    return "Agree"
+                                return "Unknown"
+                            breakdown_df["ResponseLevel"] = breakdown_df[target_col].apply(label_bucket)
+                            percent_df = breakdown_df.groupby([breakdown_col, "ResponseLevel"]).size().reset_index(name='Count')
+                            total_counts = percent_df.groupby(breakdown_col)['Count'].transform('sum')
+                            percent_df['Percent'] = (percent_df['Count'] / total_counts * 100).round(1)
+                            response_order = ["Agree", "Neutral", "Disagree", "Unknown"]
+                            percent_df["ResponseLevel"] = pd.Categorical(percent_df["ResponseLevel"], categories=response_order, ordered=True)
+                            fig = px.bar(
+                                percent_df,
+                                x=breakdown_col,
+                                y="Percent",
+                                color="ResponseLevel",
+                                text=percent_df["Percent"].astype(str) + '%',
+                                barmode="stack",
+                                title=f"Percentage Breakdown of Responses to '{selected_area}' by Gender",
+                                color_discrete_map={
+                                    "Agree": "#4CAF50",
+                                    "Neutral": "#FFC107",
+                                    "Disagree": "#F44336",
+                                    "Unknown": "#9E9E9E"
+                                },
+                                height=450
+                            )
+                            fig.update_layout(
+                                yaxis_title="Percentage (%)",
+                                xaxis_title=breakdown_col,
+                                bargap=0.5,
+                                legend_title="Response Level",
+                                uniformtext_minsize=8,
+                                uniformtext_mode='hide'
+                            )
+                            fig.update_traces(
+                                textposition="inside",
+                                insidetextanchor="middle",
+                                cliponaxis=False
+                            )
+                            config = {
+                                'displayModeBar': True,
+                                'modeBarButtonsToRemove': [
                                     'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
                                     'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
                                     'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
                                     'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
-                                    ],
-                                    'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
-                                    #'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
-                                    'toImageButtonOptions': {
-                                        'format': 'png',
-                                        'filename': 'Bar_chart_screenshot',
-                                        'height': 500,
-                                        'width': 700
-                                    },
-                                    'displaylogo': False
-                                }
-                                st.plotly_chart(fig, use_container_width=True, config=config)
-                            chart_index += 1
-                        else:
-                            st.info(f"No data found for {label}.")
+                                ],
+                                'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
+                                'toImageButtonOptions': {
+                                    'format': 'png',
+                                    'filename': 'bar_chart_screenshot',
+                                    'height': 500,
+                                    'width': 700,
+                                    'scale': 2
+                                },
+                                            'displaylogo': False
+                            }
 
-        # 🎯 Breakdown by Group (Percentage)
-        st.markdown("### 🎯 Breakdown by Group (Percentage)")
-        show_breakdown = st.toggle("Show Chart", value=True, key="toggle_breakdown")
-        if show_breakdown:
-            breakdown_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in group_columns["Gender"])), None)
-            if breakdown_col and target_col:
-                breakdown_df = df_cleaned[[breakdown_col, target_col]].dropna()
-                breakdown_df[target_col] = pd.to_numeric(breakdown_df[target_col], errors="coerce")
-                if not breakdown_df.empty:
-                    def label_bucket(val):
-                        if pd.isna(val):
-                            return "Unknown"
-                        if val <= 2:
-                            return "Disagree"
-                        elif val == 3:
-                            return "Neutral"
-                        elif val >= 4:
-                            return "Agree"
-                        return "Unknown"
-                    breakdown_df["ResponseLevel"] = breakdown_df[target_col].apply(label_bucket)
-                    percent_df = breakdown_df.groupby([breakdown_col, "ResponseLevel"]).size().reset_index(name='Count')
-                    total_counts = percent_df.groupby(breakdown_col)['Count'].transform('sum')
-                    percent_df['Percent'] = (percent_df['Count'] / total_counts * 100).round(1)
-                    response_order = ["Agree", "Neutral", "Disagree", "Unknown"]
-                    percent_df["ResponseLevel"] = pd.Categorical(percent_df["ResponseLevel"], categories=response_order, ordered=True)
-                    fig = px.bar(
-                        percent_df,
-                        x=breakdown_col,
-                        y="Percent",
-                        color="ResponseLevel",
-                        text=percent_df["Percent"].astype(str) + '%',
-                        barmode="stack",
-                        title=f"Percentage Breakdown of Responses to '{selected_area}' by Gender",
-                        color_discrete_map={
-                            "Agree": "#4CAF50",
-                            "Neutral": "#FFC107",
-                            "Disagree": "#F44336",
-                            "Unknown": "#9E9E9E"
-                        },
-                        height=450
+
+                            st.plotly_chart(fig, use_container_width=True, config=config)
+
+            # Take Action
+            school_name = st.text_input("Enter your School Name", value="ABC High School", key="school_input")
+            generate_pdf = st.button("Generate PDF")
+
+            logo_path = "project_apnapan_logo.png"
+            logo_exists = os.path.exists(logo_path)
+
+            class ProStyledPDF(FPDF):
+                def header(self):
+                    if logo_exists:
+                        self.image(logo_path, x=10, y=10, w=20)
+                    self.set_font("Arial", "B", 18)
+                    self.set_text_color(0, 51, 102)  # Navy Blue
+                    self.cell(0, 10, school_name, ln=True, align="C")
+                    self.set_font("Arial", "", 13)
+                    self.cell(0, 10, "Data Insights Snapshot", ln=True, align="C")
+                    self.ln(8)
+
+                def footer(self):
+                    self.set_y(-20)
+                    self.set_font("Arial", "I", 10)
+                    self.set_text_color(100)
+                    self.cell(0, 10, "Generated using the Project Apnapan Data Insights Tool", 0, 1, "C")
+                    self.cell(0, 10, datetime.today().strftime("%B %d, %Y"), 0, 0, "C")
+
+                def metric_card(self, label, value, color_rgb):
+                    self.set_fill_color(*color_rgb)
+                    self.set_text_color(255, 255, 255)
+                    self.set_font("Arial", "B", 12)
+                    self.cell(0, 12, f"{label}: {value:.2f}", ln=1, align="C", fill=True)
+                    self.ln(2)
+
+                def intro_section(self):
+                    self.set_font("Arial", "", 12)
+                    self.set_text_color(0)
+                    self.multi_cell(0, 8, f"This report presents a snapshot of how students experience Belonging, "
+                                        f"Safety, Respect, and Welcome at {school_name}. The results are based on "
+                                        f"student-reported data collected from the survey file.")
+                    self.ln(8)
+
+            if generate_pdf and school_name.strip():
+                if overall_belonging_score is None or not category_averages:
+                    st.error("Cannot generate PDF: No valid data available. Please upload a file and process it.")
+                else:
+                    pdf = ProStyledPDF()
+                    pdf.add_page()
+                    pdf.intro_section()
+                    pdf.metric_card("Overall Belonging Score", overall_belonging_score or 0, (0, 102, 204))  # Blue
+                    pdf.metric_card("Safety", category_averages.get("Safety", 0), (0, 153, 0))               # Green
+                    pdf.metric_card("Respect", category_averages.get("Respect", 0), (255, 153, 51))          # Orange
+                    pdf.metric_card("Welcomed", category_averages.get("Welcome", 0), (204, 0, 102))          # Pink
+                    clean_name = re.sub(r'[^\w\s-]', '', school_name).strip().replace(' ', '_')
+                    safe_filename = f"{clean_name}_insights_report.pdf"
+                    pdf_output = pdf.output(dest='S').encode('latin-1')
+                    st.download_button(
+                        label="Download Insights PDF",
+                        data=pdf_output,
+                        file_name=safe_filename,
+                        mime="application/pdf"
                     )
-                    fig.update_layout(
-                        yaxis_title="Percentage (%)",
-                        xaxis_title=breakdown_col,
-                        bargap=0.5,
-                        legend_title="Response Level",
-                        uniformtext_minsize=8,
-                        uniformtext_mode='hide'
-                    )
-                    fig.update_traces(
-                        textposition="inside",
-                        insidetextanchor="middle",
-                        cliponaxis=False
-                    )
-                    config = {
-                        'displayModeBar': True,
-                        'modeBarButtonsToRemove': [
-                            'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
-                            'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
-                            'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
-                            'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
-                        ],
-                        'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
-                        'toImageButtonOptions': {
-                            'format': 'png',
-                            'filename': 'bar_chart_screenshot',
-                            'height': 500,
-                            'width': 700,
-                            'scale': 2
-                        },
-                                    'displaylogo': False
-                    }
 
+        # Feedback Loop
+        import smtplib
+        from email.message import EmailMessage
 
-                    st.plotly_chart(fig, use_container_width=True, config=config)
+        def send_feedback_to_email(feedback_text):
+            msg = EmailMessage()
+            msg.set_content(feedback_text)
+            msg['Subject'] = 'Feedback from Streamlit App'
+            msg['From'] = "nbs917740@gmail.com"  # Replace with your Gmail
+            msg['To'] = "buttysaylee4@gmail.com"
+            try:
+                with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                    smtp.login("nbs917740@gmail.com", "thyo dcae vevx iimn")  # Replace with your Gmail & app password
+                    smtp.send_message(msg)
+                return True
+            except Exception as e:
+                st.error(f"Failed to send feedback: {e}")
+                return False
 
-    # Take Action
-    school_name = st.text_input("Enter School Name", value="school name", key="school_input")
-    generate_pdf = st.button("🎨 Generate PDF")
+        with st.expander("Feedback"):
+            feedback = st.text_area("Flag any issues or suggestions")
+            if st.button("Submit Feedback"):
+                if feedback:
+                    if send_feedback_to_email(feedback):
+                        st.success("Thank you! Your feedback has been sent.")
+                else:
+                    st.warning("Please enter some feedback before submitting.")
 
-    logo_path = "project_apnapan_logo.png"
-    logo_exists = os.path.exists(logo_path)
-
-    class ProStyledPDF(FPDF):
-        def header(self):
-            if logo_exists:
-                self.image(logo_path, x=10, y=10, w=20)
-            self.set_font("Arial", "B", 18)
-            self.set_text_color(0, 51, 102)  # Navy Blue
-            self.cell(0, 10, school_name, ln=True, align="C")
-            self.set_font("Arial", "", 13)
-            self.cell(0, 10, "Data Insights Snapshot", ln=True, align="C")
-            self.ln(8)
-
-        def footer(self):
-            self.set_y(-20)
-            self.set_font("Arial", "I", 10)
-            self.set_text_color(100)
-            self.cell(0, 10, "Generated using the Project Apnapan Data Insights Tool", 0, 1, "C")
-            self.cell(0, 10, datetime.today().strftime("%B %d, %Y"), 0, 0, "C")
-
-        def metric_card(self, label, value, color_rgb):
-            self.set_fill_color(*color_rgb)
-            self.set_text_color(255, 255, 255)
-            self.set_font("Arial", "B", 12)
-            self.cell(0, 12, f"{label}: {value:.2f}", ln=1, align="C", fill=True)
-            self.ln(2)
-
-        def intro_section(self):
-            self.set_font("Arial", "", 12)
-            self.set_text_color(0)
-            self.multi_cell(0, 8, f"This report presents a snapshot of how students experience Belonging, "
-                                f"Safety, Respect, and Welcome at {school_name}. The results are based on "
-                                f"student-reported data collected from the survey file.")
-            self.ln(8)
-
-    if generate_pdf and school_name.strip():
-        if overall_belonging_score is None or not category_averages:
-            st.error("Cannot generate PDF: No valid data available. Please upload a file and process it.")
-        else:
-            pdf = ProStyledPDF()
-            pdf.add_page()
-            pdf.intro_section()
-            pdf.metric_card("Overall Belonging Score", overall_belonging_score or 0, (0, 102, 204))  # Blue
-            pdf.metric_card("Safety", category_averages.get("Safety", 0), (0, 153, 0))               # Green
-            pdf.metric_card("Respect", category_averages.get("Respect", 0), (255, 153, 51))          # Orange
-            pdf.metric_card("Welcomed", category_averages.get("Welcome", 0), (204, 0, 102))          # Pink
-            clean_name = re.sub(r'[^\w\s-]', '', school_name).strip().replace(' ', '_')
-            safe_filename = f"{clean_name}_insights_report.pdf"
-            pdf_output = pdf.output(dest='S').encode('latin-1')
-            st.download_button(
-                label="📄 Download Insights PDF",
-                data=pdf_output,
-                file_name=safe_filename,
-                mime="application/pdf"
-            )
-
-    # Feedback Loop
-    import smtplib
-    from email.message import EmailMessage
-
-    def send_feedback_to_email(feedback_text):
-        msg = EmailMessage()
-        msg.set_content(feedback_text)
-        msg['Subject'] = 'Feedback from Streamlit App'
-        msg['From'] = "nbs917740@gmail.com"  # Replace with your Gmail
-        msg['To'] = "buttysaylee4@gmail.com"
-        try:
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                smtp.login("nbs917740@gmail.com", "thyo dcae vevx iimn")  # Replace with your Gmail & app password
-                smtp.send_message(msg)
-            return True
-        except Exception as e:
-            st.error(f"Failed to send feedback: {e}")
-            return False
-
-    with st.expander("Feedback"):
-        feedback = st.text_area("Flag any issues or suggestions")
-        if st.button("Submit Feedback"):
-            if feedback:
-                if send_feedback_to_email(feedback):
-                    st.success("Thank you! Your feedback has been sent.")
-            else:
-                st.warning("Please enter some feedback before submitting.")
-
- # Help Section
-    with st.expander("Need Help?"):
-        st.write("**FAQs**")
-        st.write("- **Q: What file formats are supported?** A: CSV, XLSX, TXT")
-        st.write("- **Q: How are missing values handled?** A: Options include Mean, Median, or Drop.")
-        st.write("- **Q: Why do I see warnings about invalid responses?** A: Ensure questionnaire columns contain valid Likert scale responses (e.g., 'Strongly Agree', 'Disagree').")
-        st.write("Contact us at: Phone: +91 1234567890 | Email: support@apnapan.org")
+with st.expander("Need Help?"):
+    st.write("Contact us at: Phone: +91 1234567890")
