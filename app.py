@@ -20,14 +20,26 @@ def connect_to_google_sheet(sheet_name):
     # Define the scope
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-    # Load credentials from the JSON file
-    creds = ServiceAccountCredentials.from_json_keyfile_name("data-insight-tool-467421-4ef9618d2e45.json", scope)
+    # Use Streamlit secrets for credentials
+    creds_dict = {
+        "type": st.secrets["connections"]["gsheets"]["type"],
+        "project_id": st.secrets["connections"]["gsheets"]["project_id"],
+        "private_key_id": st.secrets["connections"]["gsheets"]["private_key_id"],
+        "private_key": st.secrets["connections"]["gsheets"]["private_key"],
+        "client_email": st.secrets["connections"]["gsheets"]["client_email"],
+        "client_id": st.secrets["connections"]["gsheets"]["client_id"],
+        "auth_uri": st.secrets["connections"]["gsheets"]["auth_uri"],
+        "token_uri": st.secrets["connections"]["gsheets"]["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["connections"]["gsheets"]["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": st.secrets["connections"]["gsheets"]["client_x509_cert_url"]
+    }
 
     # Authorize the client
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
 
     # Open the Google Sheet
-    sheet = client.open(sheet_name).sheet1  # Access the first sheet
+    sheet = client.open(sheet_name).sheet1
     return sheet
 
 # Initialize session state for navigation
@@ -1035,11 +1047,13 @@ if uploaded_file is not None:
         # Feedback Loop
         def send_feedback_to_google_sheet(feedback_text):
             try:
-                sheet = connect_to_google_sheet("Apnapan Data Insights Generator Tool Feedbacks")  # Replace with your sheet name
+                sheet = connect_to_google_sheet("Apnapan Data Insights Generator Tool Feedbacks")
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                sheet.append_row([timestamp, feedback_text])  # Add a new row with the timestamp and feedback
+                sheet.append_row([timestamp, feedback_text])
+                print(f"Feedback submitted: {timestamp}, {feedback_text}")
                 return True
             except Exception as e:
+                print(f"Error: {e}")
                 st.error(f"Failed to send feedback: {e}")
                 return False
 
