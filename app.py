@@ -1058,16 +1058,16 @@ if uploaded_file is not None:
                 return False
 
         # Feedback Section
-        with st.expander("Feedback"):
-            feedback = st.text_area("Flag any issues or suggestions")
-            if st.button("Submit Feedback"):
-                if feedback:
-                    if send_feedback_to_google_sheet(feedback):
-                        st.success("Thank you! Your feedback has been recorded.")
-                    else:
-                        st.error("Failed to submit feedback. Please try again later.")
+    with st.expander("Feedback"):
+        feedback = st.text_area("Flag any issues or suggestions")
+        if st.button("Submit Feedback"):
+            if feedback:
+                if send_feedback_to_google_sheet(feedback):
+                    st.success("Thank you! Your feedback has been recorded.")
                 else:
-                    st.warning("Please enter some feedback before submitting.")
+                    st.error("Failed to submit feedback. Please try again later.")
+            else:
+                st.warning("Please enter some feedback before submitting.")
 
-        with st.expander("Need Help?"):
-            st.write("Contact us at: Phone: +91 1234567890")
+    with st.expander("Need Help?"):
+        st.write("Contact us at: Phone: +91 1234567890")
