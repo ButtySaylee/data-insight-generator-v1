@@ -650,338 +650,338 @@ if uploaded_file is not None:
                     st.dataframe(summary)
 
         # Explore and Customize
-        with st.expander("Click here to explore Belonging Across Groups!"):
-            st.subheader("Compare How Different Student Groups Experience Belonging")
-            show_explore = st.toggle("Show Charts", value=True, key="toggle_explore")
-            if show_explore and not df_cleaned.empty:
-                def categorize_income(possessions: str) -> str:
-                    if pd.isna(possessions):
-                        return "Unknown"
-                    items = possessions.lower()
-                    has_car = "car" in items
-                    has_computer = "computer" in items or "laptop" in items
-                    has_home = "apna ghar" in items
-                    is_rented = "rent" in items
-                    if has_car and has_home:
-                        return "High"
-                    if has_computer or (has_home and not has_car):
-                        return "Mid"
-                    return "Low"
+    with st.expander("Click here to explore Belonging Across Groups!"):
+        st.subheader("Compare How Different Student Groups Experience Belonging")
+        show_explore = st.toggle("Show Charts", value=True, key="toggle_explore")
+        if show_explore and not df_cleaned.empty:
+            def categorize_income(possessions: str) -> str:
+                if pd.isna(possessions):
+                    return "Unknown"
+                items = possessions.lower()
+                has_car = "car" in items
+                has_computer = "computer" in items or "laptop" in items
+                has_home = "apna ghar" in items
+                is_rented = "rent" in items
+                if has_car and has_home:
+                    return "High"
+                if has_computer or (has_home and not has_car):
+                    return "Mid"
+                return "Low"
 
-                possessions_col = next((col for col in df_cleaned.columns if "what items among these do you have at home".lower() in col.lower()), None)
-                if possessions_col:
-                    df_cleaned["Income Category"] = df_cleaned[possessions_col].apply(categorize_income)
+            possessions_col = next((col for col in df_cleaned.columns if "what items among these do you have at home".lower() in col.lower()), None)
+            if possessions_col:
+                df_cleaned["Income Category"] = df_cleaned[possessions_col].apply(categorize_income)
 
-                st.subheader(" Demographic Overview")
-                demographic_cols = {
-                    "Gender": ["gender", "What gender do you use"],
-                    "Grade": ["grade", "Which grade are you in"],
-                    "Religion": ["religion"],
-                    "Ethnicity": ["ethnicity_cleaned"]
-                }
+            st.subheader(" Demographic Overview")
+            demographic_cols = {
+                "Gender": ["gender", "What gender do you use"],
+                "Grade": ["grade", "Which grade are you in"],
+                "Religion": ["religion"],
+                "Ethnicity": ["ethnicity_cleaned"]
+            }
 
-                demographic_data = {}
-                for label, keywords in demographic_cols.items():
-                    matched_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
-                    if matched_col:
-                        demographic_data[label] = matched_col
+            demographic_data = {}
+            for label, keywords in demographic_cols.items():
+                matched_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
+                if matched_col:
+                    demographic_data[label] = matched_col
 
-                if demographic_data:
-                    items = list(demographic_data.items())
+            if demographic_data:
+                items = list(demographic_data.items())
 
-                    for row_i in range(0, len(items), 2):
-                        row = st.columns(2)
+                for row_i in range(0, len(items), 2):
+                    row = st.columns(2)
 
-                        for col_i in range(2):
-                            idx = row_i + col_i
-                            if idx >= len(items):
-                                break
+                    for col_i in range(2):
+                        idx = row_i + col_i
+                        if idx >= len(items):
+                            break
 
-                            label, col_name = items[idx]
-                            col = row[col_i]
+                        label, col_name = items[idx]
+                        col = row[col_i]
 
-                            value_counts = df_cleaned[col_name].value_counts(dropna=False).rename_axis(label).reset_index(name='Count')
-                            fig = px.pie(
-                                value_counts,
-                                names=label,
-                                values='Count',
-                                title=f"{label} Distribution",
-                                hole=0.3
-                            )
-
-                            num_categories = len(value_counts)
-                            if num_categories > 3 or any(len(str(cat)) > 8 for cat in value_counts[label]):
-                                fig.update_traces(
-                                    textposition='outside',
-                                    textinfo='percent',
-                                    textfont=dict(size=15),
-                                    marker=dict(line=dict(color='#000000', width=1))
-                                )
-                            else:
-                                fig.update_traces(
-                                    textposition='auto',
-                                    textinfo='percent',
-                                    textfont=dict(size=15)
-                                )
-
-                            fig.update_layout(
-                                uniformtext_minsize=7,
-                                margin=dict(t=45, b=45, l=45, r=45),
-                                height=400,
-                                width=400,
-                                showlegend=True
-                            )
-
-                            config = {
-                                'displayModeBar': True,
-                                'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
-                                'toImageButtonOptions': {
-                                    'format': 'png',
-                                    'filename': f'{label}_distribution',
-                                    'height': 500,
-                                    'width': 700
-                                }
-                            }
-
-                            col.plotly_chart(fig, use_container_width=True, config=config)
-
-
-                st.write("### Food for Thought")
-                st.write(
-                    """
-                    Take a moment to observe the differences in the following charts.  
-                    - Do certain groups consistently score higher or lower? Why do you think that happens? 
-                    - What kind of experiences or challenges could be influencing their responses?  
-                    - Are there social, cultural, or school-related factors that might be shaping these patterns?
-
-                    """
-                ) 
-                st.write("")
-
-
-
-                selected_area = st.selectbox("Which belonging aspect do you want to explore?", list(belonging_questions.keys()))
-                if selected_area and not df_cleaned.empty:
-                    area_keywords = belonging_questions[selected_area]
-                    matched_cols = [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in area_keywords)]
-                    if not matched_cols:
-                        st.warning("No matching questions found for this aspect.")
-                    else:
-                        target_col= matched_cols[0]
-                        st.markdown(f"**Showing results for:** {', '.join(matched_cols)}")
-                        
-                        
-
-
-                        col1, col2 = st.columns(2)
-                        col_slots = [col1, col2]
-                        chart_index = 0
-
-                        group_columns = {
-                            "Gender": ["gender", "What gender do you use"],
-                            "Grade": ["grade", "Which grade are you in"],
-                            "Income Status": ["Income Category"],
-                            "Health Condition": ["disability", "health condition"],
-                            "Ethnicity": ["ethnicity_cleaned"],
-                            "Religion": ["religion"]
-                        }
-                        
-                        # Gave a white box that looked unclean in most charts 
-                        # st.markdown(   
-                        #     """
-                        #     <style>
-                        #     .modebar {
-                        #         display: block !important;
-                        #         background-color: white !important;
-                        #         border: 1px solid #ddd !important;
-                        #         border-radius: 4px !important;
-                        #         padding: 2px !important;
-                        #     }
-                        #     .modebar-group {
-                        #         display: flex !important;
-                        #         align-items: center !important;
-                        #     }
-                        #     .modebar-btn {
-                        #         background-color: transparent !important;
-                        #         border: none !important;
-                        #         padding: 2px 6px !important;
-                        #         color: #333333 !important;
-                        #     }
-                        #     .modebar-btn:hover {
-                        #         background-color: #f0f0f0 !important;
-                        #     }
-                        #     </style>
-                        #     """,
-                        #     unsafe_allow_html=True
-                        # )
-
-                        st.markdown(
-                            """
-                            <style>
-                            .modebar {
-                                background-color: transparent !important;
-                                border: none !important;
-                                box-shadow: none !important;
-                            }
-                            .modebar-btn > svg { 
-                                stroke: white !important;
-                                fill: white !important;
-                                opacity: 1 !important 
-                            }
-                            .modebar-btn:hover {
-                                background-color: rgba(255, 255, 255, 0.2) !important;
-                            }
-                            </style>
-                            """,
-                            unsafe_allow_html=True
+                        value_counts = df_cleaned[col_name].value_counts(dropna=False).rename_axis(label).reset_index(name='Count')
+                        fig = px.pie(
+                            value_counts,
+                            names=label,
+                            values='Count',
+                            title=f"{label} Distribution",
+                            hole=0.3
                         )
 
-
-                        for label, keywords in group_columns.items():
-                            matched_group_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
-                            if matched_group_col:
-                                if "ethnicity" in matched_group_col.lower() and "ethnicity_cleaned" in df_cleaned.columns:
-                                    plot_df = df_cleaned[["ethnicity_cleaned", target_col]].dropna()
-                                    plot_df.rename(columns={"ethnicity_cleaned": matched_group_col}, inplace=True)
-                                else:
-                                    plot_df = df_cleaned[[matched_group_col, target_col]].dropna()
-                                if target_col in plot_df.columns:
-                                    plot_df[target_col] = pd.to_numeric(plot_df[target_col], errors="coerce")
-                                else:
-                                    st.warning(f"Column '{target_col}' not found in the data.")
-                                group_avg = plot_df.groupby(matched_group_col)[target_col].agg(['mean', 'count']).reset_index()
-                                group_avg.columns = [matched_group_col, 'AvgScore', 'Count']
-                                with col_slots[chart_index % 2]:
-                                    fig = px.bar(
-                                        group_avg,
-                                        x=matched_group_col,
-                                        y="AvgScore",
-                                        text="Count",
-                                        title=f"{selected_area} by {label}",
-                                        labels={matched_group_col: label, "AvgScore": "Avg Score"},
-                                        height=400,
-                                        color=matched_group_col,
-                                        color_discrete_sequence=px.colors.qualitative.Set3
-                                    )
-                                    fig.update_traces(
-                                        texttemplate='N=%{text}',
-                                        textposition='inside',
-                                        insidetextanchor='middle',
-                                        hovertemplate="%{x}<br>Avg Score: %{y:.2f}<br>Students: %{text}<extra></extra>"
-                                    )
-                                    for i, row in group_avg.iterrows():
-                                        fig.add_annotation(
-                                            x=row[matched_group_col],
-                                            y=row["AvgScore"],
-                                            text=f"Avg={row['AvgScore']:.2f}",
-                                            showarrow=False,
-                                            yshift=10,
-                                            font=dict(color='white'),
-                                            bgcolor='rgba(0,0,0,0.5)'
-                                        )
-                                    max_y = group_avg["AvgScore"].max()
-                                    fig.update_layout(
-                                        margin=dict(t=50),
-                                        yaxis=dict(range=[0, max_y + 0.5])
-                                    )
-                                    config = {
-                                        'displayModeBar': True,
-                                        'modeBarButtonsToRemove': [
-                                        'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
-                                        'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
-                                        'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
-                                        'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
-                                        ],
-                                        'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
-                                        #'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
-                                        'toImageButtonOptions': {
-                                            'format': 'png',
-                                            'filename': 'Bar_chart_screenshot',
-                                            'height': 500,
-                                            'width': 700
-                                        },
-                                        'displaylogo': False
-                                    }
-                                    st.plotly_chart(fig, use_container_width=True, config=config)
-                                chart_index += 1
-                            else:
-                                st.info(f"No data found for {label}.")
-
-                 # 🎯 Breakdown by Group (Percentage)
-                st.markdown("### Breakdown by Group (Percentage)")
-                show_breakdown = st.toggle("Show Chart", value=True, key="toggle_breakdown")
-                if show_breakdown:
-                    breakdown_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in group_columns["Gender"])), None)
-                    if breakdown_col and target_col:
-                        breakdown_df = df_cleaned[[breakdown_col, target_col]].dropna()
-                        breakdown_df[target_col] = pd.to_numeric(breakdown_df[target_col], errors="coerce")
-                        if not breakdown_df.empty:
-                            def label_bucket(val):
-                                if pd.isna(val):
-                                    return "Unknown"
-                                if val <= 2:
-                                    return "Disagree"
-                                elif val == 3:
-                                    return "Neutral"
-                                elif val >= 4:
-                                    return "Agree"
-                                return "Unknown"
-                            breakdown_df["ResponseLevel"] = breakdown_df[target_col].apply(label_bucket)
-                            percent_df = breakdown_df.groupby([breakdown_col, "ResponseLevel"]).size().reset_index(name='Count')
-                            total_counts = percent_df.groupby(breakdown_col)['Count'].transform('sum')
-                            percent_df['Percent'] = (percent_df['Count'] / total_counts * 100).round(1)
-                            response_order = ["Agree", "Neutral", "Disagree", "Unknown"]
-                            percent_df["ResponseLevel"] = pd.Categorical(percent_df["ResponseLevel"], categories=response_order, ordered=True)
-                            fig = px.bar(
-                                percent_df,
-                                x=breakdown_col,
-                                y="Percent",
-                                color="ResponseLevel",
-                                text=percent_df["Percent"].astype(str) + '%',
-                                barmode="stack",
-                                title=f"Percentage Breakdown of Responses to '{selected_area}' by Gender",
-                                color_discrete_map={
-                                    "Agree": "#4CAF50",
-                                    "Neutral": "#FFC107",
-                                    "Disagree": "#F44336",
-                                    "Unknown": "#9E9E9E"
-                                },
-                                height=450
-                            )
-                            fig.update_layout(
-                                yaxis_title="Percentage (%)",
-                                xaxis_title=breakdown_col,
-                                bargap=0.5,
-                                legend_title="Response Level",
-                                uniformtext_minsize=8,
-                                uniformtext_mode='hide'
-                            )
+                        num_categories = len(value_counts)
+                        if num_categories > 3 or any(len(str(cat)) > 8 for cat in value_counts[label]):
                             fig.update_traces(
-                                textposition="inside",
-                                insidetextanchor="middle",
-                                cliponaxis=False
+                                textposition='outside',
+                                textinfo='percent',
+                                textfont=dict(size=15),
+                                marker=dict(line=dict(color='#000000', width=1))
                             )
-                            config = {
-                                'displayModeBar': True,
-                                'modeBarButtonsToRemove': [
+                        else:
+                            fig.update_traces(
+                                textposition='auto',
+                                textinfo='percent',
+                                textfont=dict(size=15)
+                            )
+
+                        fig.update_layout(
+                            uniformtext_minsize=7,
+                            margin=dict(t=45, b=45, l=45, r=45),
+                            height=400,
+                            width=400,
+                            showlegend=True
+                        )
+
+                        config = {
+                            'displayModeBar': True,
+                            'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
+                            'toImageButtonOptions': {
+                                'format': 'png',
+                                'filename': f'{label}_distribution',
+                                'height': 500,
+                                'width': 700
+                            }
+                        }
+
+                        col.plotly_chart(fig, use_container_width=True, config=config)
+
+
+            st.write("### Food for Thought")
+            st.write(
+                """
+                Take a moment to observe the differences in the following charts.  
+                - Do certain groups consistently score higher or lower? Why do you think that happens? 
+                - What kind of experiences or challenges could be influencing their responses?  
+                - Are there social, cultural, or school-related factors that might be shaping these patterns?
+
+                """
+            ) 
+            st.write("")
+
+
+
+            selected_area = st.selectbox("Which belonging aspect do you want to explore?", list(belonging_questions.keys()))
+            if selected_area and not df_cleaned.empty:
+                area_keywords = belonging_questions[selected_area]
+                matched_cols = [col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in area_keywords)]
+                if not matched_cols:
+                    st.warning("No matching questions found for this aspect.")
+                else:
+                    target_col= matched_cols[0]
+                    st.markdown(f"**Showing results for:** {', '.join(matched_cols)}")
+                    
+                    
+
+
+                    col1, col2 = st.columns(2)
+                    col_slots = [col1, col2]
+                    chart_index = 0
+
+                    group_columns = {
+                        "Gender": ["gender", "What gender do you use"],
+                        "Grade": ["grade", "Which grade are you in"],
+                        "Income Status": ["Income Category"],
+                        "Health Condition": ["disability", "health condition"],
+                        "Ethnicity": ["ethnicity_cleaned"],
+                        "Religion": ["religion"]
+                    }
+                    
+                    # Gave a white box that looked unclean in most charts 
+                    # st.markdown(   
+                    #     """
+                    #     <style>
+                    #     .modebar {
+                    #         display: block !important;
+                    #         background-color: white !important;
+                    #         border: 1px solid #ddd !important;
+                    #         border-radius: 4px !important;
+                    #         padding: 2px !important;
+                    #     }
+                    #     .modebar-group {
+                    #         display: flex !important;
+                    #         align-items: center !important;
+                    #     }
+                    #     .modebar-btn {
+                    #         background-color: transparent !important;
+                    #         border: none !important;
+                    #         padding: 2px 6px !important;
+                    #         color: #333333 !important;
+                    #     }
+                    #     .modebar-btn:hover {
+                    #         background-color: #f0f0f0 !important;
+                    #     }
+                    #     </style>
+                    #     """,
+                    #     unsafe_allow_html=True
+                    # )
+
+                    st.markdown(
+                        """
+                        <style>
+                        .modebar {
+                            background-color: transparent !important;
+                            border: none !important;
+                            box-shadow: none !important;
+                        }
+                        .modebar-btn > svg { 
+                            stroke: white !important;
+                            fill: white !important;
+                            opacity: 1 !important 
+                        }
+                        .modebar-btn:hover {
+                            background-color: rgba(255, 255, 255, 0.2) !important;
+                        }
+                        </style>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+
+                    for label, keywords in group_columns.items():
+                        matched_group_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in keywords)), None)
+                        if matched_group_col:
+                            if "ethnicity" in matched_group_col.lower() and "ethnicity_cleaned" in df_cleaned.columns:
+                                plot_df = df_cleaned[["ethnicity_cleaned", target_col]].dropna()
+                                plot_df.rename(columns={"ethnicity_cleaned": matched_group_col}, inplace=True)
+                            else:
+                                plot_df = df_cleaned[[matched_group_col, target_col]].dropna()
+                            if target_col in plot_df.columns:
+                                plot_df[target_col] = pd.to_numeric(plot_df[target_col], errors="coerce")
+                            else:
+                                st.warning(f"Column '{target_col}' not found in the data.")
+                            group_avg = plot_df.groupby(matched_group_col)[target_col].agg(['mean', 'count']).reset_index()
+                            group_avg.columns = [matched_group_col, 'AvgScore', 'Count']
+                            with col_slots[chart_index % 2]:
+                                fig = px.bar(
+                                    group_avg,
+                                    x=matched_group_col,
+                                    y="AvgScore",
+                                    text="Count",
+                                    title=f"{selected_area} by {label}",
+                                    labels={matched_group_col: label, "AvgScore": "Avg Score"},
+                                    height=400,
+                                    color=matched_group_col,
+                                    color_discrete_sequence=px.colors.qualitative.Set3
+                                )
+                                fig.update_traces(
+                                    texttemplate='N=%{text}',
+                                    textposition='inside',
+                                    insidetextanchor='middle',
+                                    hovertemplate="%{x}<br>Avg Score: %{y:.2f}<br>Students: %{text}<extra></extra>"
+                                )
+                                for i, row in group_avg.iterrows():
+                                    fig.add_annotation(
+                                        x=row[matched_group_col],
+                                        y=row["AvgScore"],
+                                        text=f"Avg={row['AvgScore']:.2f}",
+                                        showarrow=False,
+                                        yshift=10,
+                                        font=dict(color='white'),
+                                        bgcolor='rgba(0,0,0,0.5)'
+                                    )
+                                max_y = group_avg["AvgScore"].max()
+                                fig.update_layout(
+                                    margin=dict(t=50),
+                                    yaxis=dict(range=[0, max_y + 0.5])
+                                )
+                                config = {
+                                    'displayModeBar': True,
+                                    'modeBarButtonsToRemove': [
                                     'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
                                     'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
                                     'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
                                     'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
-                                ],
-                                'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
-                                'toImageButtonOptions': {
-                                    'format': 'png',
-                                    'filename': 'bar_chart_screenshot',
-                                    'height': 500,
-                                    'width': 700,
-                                    'scale': 2
-                                },
-                                            'displaylogo': False
-                            }
+                                    ],
+                                    'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
+                                    #'modeBarButtonsToAdd': ['zoom2d', 'autoScale2d', 'resetScale2d', 'toImage'],
+                                    'toImageButtonOptions': {
+                                        'format': 'png',
+                                        'filename': 'Bar_chart_screenshot',
+                                        'height': 500,
+                                        'width': 700
+                                    },
+                                    'displaylogo': False
+                                }
+                                st.plotly_chart(fig, use_container_width=True, config=config)
+                            chart_index += 1
+                        else:
+                            st.info(f"No data found for {label}.")
+
+                # 🎯 Breakdown by Group (Percentage)
+            st.markdown("### Breakdown by Group (Percentage)")
+            show_breakdown = st.toggle("Show Chart", value=True, key="toggle_breakdown")
+            if show_breakdown:
+                breakdown_col = next((col for col in df_cleaned.columns if any(k.lower() in col.lower() for k in group_columns["Gender"])), None)
+                if breakdown_col and target_col:
+                    breakdown_df = df_cleaned[[breakdown_col, target_col]].dropna()
+                    breakdown_df[target_col] = pd.to_numeric(breakdown_df[target_col], errors="coerce")
+                    if not breakdown_df.empty:
+                        def label_bucket(val):
+                            if pd.isna(val):
+                                return "Unknown"
+                            if val <= 2:
+                                return "Disagree"
+                            elif val == 3:
+                                return "Neutral"
+                            elif val >= 4:
+                                return "Agree"
+                            return "Unknown"
+                        breakdown_df["ResponseLevel"] = breakdown_df[target_col].apply(label_bucket)
+                        percent_df = breakdown_df.groupby([breakdown_col, "ResponseLevel"]).size().reset_index(name='Count')
+                        total_counts = percent_df.groupby(breakdown_col)['Count'].transform('sum')
+                        percent_df['Percent'] = (percent_df['Count'] / total_counts * 100).round(1)
+                        response_order = ["Agree", "Neutral", "Disagree", "Unknown"]
+                        percent_df["ResponseLevel"] = pd.Categorical(percent_df["ResponseLevel"], categories=response_order, ordered=True)
+                        fig = px.bar(
+                            percent_df,
+                            x=breakdown_col,
+                            y="Percent",
+                            color="ResponseLevel",
+                            text=percent_df["Percent"].astype(str) + '%',
+                            barmode="stack",
+                            title=f"Percentage Breakdown of Responses to '{selected_area}' by Gender",
+                            color_discrete_map={
+                                "Agree": "#4CAF50",
+                                "Neutral": "#FFC107",
+                                "Disagree": "#F44336",
+                                "Unknown": "#9E9E9E"
+                            },
+                            height=450
+                        )
+                        fig.update_layout(
+                            yaxis_title="Percentage (%)",
+                            xaxis_title=breakdown_col,
+                            bargap=0.5,
+                            legend_title="Response Level",
+                            uniformtext_minsize=8,
+                            uniformtext_mode='hide'
+                        )
+                        fig.update_traces(
+                            textposition="inside",
+                            insidetextanchor="middle",
+                            cliponaxis=False
+                        )
+                        config = {
+                            'displayModeBar': True,
+                            'modeBarButtonsToRemove': [
+                                'pan2d', 'select2d', 'lasso2d', 'zoom2d', 'autoScale2d', 'hoverClosestCartesian',
+                                'hoverCompareCartesian', 'toggleSpikelines', 'zoomInGeo', 'zoomOutGeo',
+                                'resetGeo', 'hoverClosestGeo', 'sendDataToCloud', 'toggleHover', 'drawline',
+                                'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'
+                            ],
+                            'modeBarButtonsToAdd': ['zoomIn2d', 'zoomOut2d', 'resetScale2d', 'toImage', 'toggleFullscreen'],
+                            'toImageButtonOptions': {
+                                'format': 'png',
+                                'filename': 'bar_chart_screenshot',
+                                'height': 500,
+                                'width': 700,
+                                'scale': 2
+                            },
+                                        'displaylogo': False
+                        }
 
 
-                            st.plotly_chart(fig, use_container_width=True, config=config)
+                        st.plotly_chart(fig, use_container_width=True, config=config)
 
             # Take Action
             school_name = st.text_input("Enter your School Name", value="ABC High School", key="school_input")
